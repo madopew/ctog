@@ -18,7 +18,7 @@
 
 %expect 2
 
-%start translation_unit
+%start program_unit
 
 
 %{
@@ -31,28 +31,29 @@ int yylex();
 void yyerror(char *);
 char *concatn(int n, ...);
 char *createfunc(char *, char *, char *);
-char *createproto(char *, char *);
+char *createfunccall(char *, char *);
 
 #define EXPS "<expression>"
 #define EXPE "</expression>"
+#define SUBS "<sub>"
+#define SUBE "</sub>"
 
 #define DECS "<declaration>"
 #define DECE "</declaration>"
 
 #define FUNS "<function>"
 #define FUNE "</function>"
-#define SPES "<specifier>"
-#define SPEE "</specifier>"
 #define PROS "<prototype>"
 #define PROE "</prototype>"
-#define NAMS "<name>"
-#define NAME "</name>"
-#define PARS "<parameters>"
-#define PARE "</parameters>"
-#define PARAMS "<param>"
-#define PARAME "</param>"
 #define BODS "<body>"
 #define BODE "</body>"
+
+#define CALS "<funccall>"
+#define CALE "</funccall>"
+#define NAMS "<name>"
+#define NAME "</name>"
+#define ARGS "<arguments>"
+#define ARGE "</arguments>"
 
 %}
 
@@ -94,7 +95,7 @@ postfix_expression
 	: primary_expression                                    /*auto*/
 	| postfix_expression '[' expression ']'
 	| postfix_expression '(' ')'
-	| postfix_expression '(' argument_expression_list ')'
+	| postfix_expression '(' argument_expression_list ')'	{$$ = createfunccall($1, $3);}
 	| postfix_expression '.' IDENTIFIER
 	| postfix_expression PTR_OP IDENTIFIER
 	| postfix_expression INC_OP
@@ -104,8 +105,8 @@ postfix_expression
 	;
 
 argument_expression_list
-	: assignment_expression
-	| argument_expression_list ',' assignment_expression
+	: assignment_expression									/*auto*/
+	| argument_expression_list ',' assignment_expression	{$$ = concatn(3, $1, ",", $3);}
 	;
 
 unary_expression
@@ -345,7 +346,7 @@ type_qualifier
 	: CONST			/*auto*/
 	| RESTRICT		/*auto*/
 	| VOLATILE		/*auto*/
-	| ATOMIC
+	| ATOMIC		/*auto*/
 	;
 
 function_specifier
@@ -376,7 +377,7 @@ direct_declarator
 	| direct_declarator '[' type_qualifier_list assignment_expression ']'
 	| direct_declarator '[' type_qualifier_list ']'
 	| direct_declarator '[' assignment_expression ']'
-	| direct_declarator '(' parameter_type_list ')'									{$$ = createproto($1, $3);}
+	| direct_declarator '(' parameter_type_list ')'									{$$ = concatn(4, $1, "(", $3, ")");}
 	| direct_declarator '(' ')'
 	| direct_declarator '(' identifier_list ')'
 	;
@@ -390,7 +391,7 @@ pointer
 
 type_qualifier_list
 	: type_qualifier                        /*auto*/
-	| type_qualifier_list type_qualifier
+	| type_qualifier_list type_qualifier	{$$ = concatn(2, $1, $2);}
 	;
 
 
@@ -401,18 +402,18 @@ parameter_type_list
 
 parameter_list
 	: parameter_declaration						/*auto*/
-	| parameter_list ',' parameter_declaration	{$$ = concatn(2, $1, $3);}
+	| parameter_list ',' parameter_declaration	{$$ = concatn(3, $1, ",", $3);}
 	;
 
 parameter_declaration
-	: declaration_specifiers declarator				{$$ = concatn(4, PARAMS, $1, $2, PARAME);}
-	| declaration_specifiers abstract_declarator
-	| declaration_specifiers
+	: declaration_specifiers declarator				{$$ = concatn(2, $1, $2);}
+	| declaration_specifiers abstract_declarator	{$$ = concatn(2, $1, $2);}
+	| declaration_specifiers						/*auto*/
 	;
 
 identifier_list
-	: IDENTIFIER
-	| identifier_list ',' IDENTIFIER
+	: IDENTIFIER						/*auto*/
+	| identifier_list ',' IDENTIFIER	{$$ = concatn(3, $1, ",", $3);}
 	;
 
 type_name
@@ -421,7 +422,7 @@ type_name
 	;
 
 abstract_declarator
-	: pointer direct_abstract_declarator
+	: pointer direct_abstract_declarator	{$$ = concatn(2, $1, $2);}
 	| pointer								/*auto*/
 	| direct_abstract_declarator			/*auto*/
 	;
@@ -491,7 +492,7 @@ statement
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement
+	: IDENTIFIER ':' statement					
 	| CASE constant_expression ':' statement
 	| DEFAULT ':' statement
 	;
@@ -512,8 +513,8 @@ block_item
 	;
 
 expression_statement
-	: ';'
-	| expression ';'
+	: ';'				{/*empty expression skipped*/}
+	| expression ';'	/*auto*/
 	;
 
 selection_statement
@@ -539,14 +540,18 @@ jump_statement
 	| RETURN expression ';'
 	;
 
+program_unit
+	: translation_unit		{$$ = concatn(3, "<program>", $1, "</program>");printf("%s", $$);}
+	;
+
 translation_unit
-	: external_declaration
-	| translation_unit external_declaration
+	: external_declaration						{$$ = strdup($1);}
+	| translation_unit external_declaration		{$$ = concatn(2, $1, $2);}
 	;
 
 external_declaration
-	: function_definition	{printf($1);}
-	| declaration
+	: function_definition	/*auto*/
+	| declaration			/*auto*/
 	;
 
 function_definition
@@ -561,12 +566,12 @@ declaration_list
 
 %%
 
-char *createproto(char *name, char *parameters) {
-	return concatn(6, NAMS, name, NAME, PARS, parameters, PARE);
+char *createfunccall(char *funcname, char *args) {
+	return concatn(8, CALS, NAMS, funcname, NAME, ARGS,  args, ARGE, CALE);
 }
 
 char *createfunc(char *specifiers, char *prototype, char *body) {
-	return concatn(11, FUNS, SPES, specifiers, SPEE, PROS, prototype, PROE, BODS, body, BODE, FUNE);
+	return concatn(9, FUNS, PROS, specifiers, prototype, PROE, BODS, body, BODE, FUNE);
 }
 
 char *concatn(int n, ...) {
