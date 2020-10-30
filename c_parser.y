@@ -1,17 +1,22 @@
 %define api.value.type { char *}
 
-%token IDENTIFIER CONSTANT STRING_LITERAL SIZEOF
-%token PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
-%token AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
-%token SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
-%token XOR_ASSIGN OR_ASSIGN TYPE_NAME
+%token	IDENTIFIER I_CONSTANT F_CONSTANT STRING_LITERAL FUNC_NAME SIZEOF
+%token	PTR_OP INC_OP DEC_OP LEFT_OP RIGHT_OP LE_OP GE_OP EQ_OP NE_OP
+%token	AND_OP OR_OP MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN ADD_ASSIGN
+%token	SUB_ASSIGN LEFT_ASSIGN RIGHT_ASSIGN AND_ASSIGN
+%token	XOR_ASSIGN OR_ASSIGN
 
-%token TYPEDEF EXTERN STATIC AUTO REGISTER INLINE RESTRICT
-%token CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE CONST VOLATILE VOID
-%token BOOL COMPLEX IMAGINARY
-%token STRUCT UNION ENUM ELLIPSIS
+%token	TYPEDEF EXTERN STATIC AUTO REGISTER INLINE
+%token	CONST RESTRICT VOLATILE
+%token	BOOL CHAR SHORT INT LONG SIGNED UNSIGNED FLOAT DOUBLE VOID
+%token	COMPLEX IMAGINARY 
+%token	STRUCT UNION ENUM ELLIPSIS
 
 %token CASE DEFAULT IF ELSE SWITCH WHILE DO FOR GOTO CONTINUE BREAK RETURN
+
+%token	ALIGNAS ALIGNOF ATOMIC GENERIC NORETURN STATIC_ASSERT THREAD_LOCAL
+
+%expect 2
 
 %start translation_unit
 
@@ -55,9 +60,34 @@ char *createproto(char *, char *);
 
 primary_expression
 	: IDENTIFIER 			/*auto*/		
-	| CONSTANT 				/*auto*/
-	| STRING_LITERAL 		/*auto*/
+	| constant 				/*auto*/
+	| string 				/*auto*/
 	| '(' expression ')'	{ $$ = concatn(3, "(", $2, ")");}
+	| generic_selection		/*auto*/
+	;
+
+constant
+	: I_CONSTANT		/*auto*/	
+	| F_CONSTANT		/*auto*/
+	;
+
+string
+	: STRING_LITERAL	/*auto*/
+	| FUNC_NAME			/*auto*/
+	;
+
+generic_selection
+	: GENERIC '(' assignment_expression ',' generic_assoc_list ')'
+	;
+
+generic_assoc_list
+	: generic_association							/*auto*/
+	| generic_assoc_list ',' generic_association
+	;
+
+generic_association
+	: type_name ':' assignment_expression
+	| DEFAULT ':' assignment_expression
 	;
 
 postfix_expression
@@ -85,6 +115,7 @@ unary_expression
 	| unary_operator cast_expression	{$$ = concatn(2, $1, $2);}
 	| SIZEOF unary_expression			{$$ = concatn(2, $1, $2);}
 	| SIZEOF '(' type_name ')'			{$$ = concatn(4, $1, "(", $3, ")");}
+	| ALIGNOF '(' type_name ')'
 	;
 
 unary_operator
@@ -195,17 +226,20 @@ constant_expression
 declaration
 	: declaration_specifiers ';'						{$$ = concatn(3, DECS, $1, DECE);}
 	| declaration_specifiers init_declarator_list ';'	{$$ = concatn(4, DECS, $1, $2, DECE);}
+	| static_assert_declaration							/*auto*/
 	;
 
 declaration_specifiers
-	: storage_class_specifier							/*auto*/
-	| storage_class_specifier declaration_specifiers	{$$ = concatn(2, $1, $2);}
-	| type_specifier									/*auto*/
+	: storage_class_specifier declaration_specifiers	{$$ = concatn(2, $1, $2);}
+	| storage_class_specifier							/*auto*/
 	| type_specifier declaration_specifiers				{$$ = concatn(2, $1, $2);}
-	| type_qualifier									/*auto*/
+	| type_specifier									/*auto*/
 	| type_qualifier declaration_specifiers				{$$ = concatn(2, $1, $2);}
-	| function_specifier								/*auto*/
+	| type_qualifier									/*auto*/
 	| function_specifier declaration_specifiers			{$$ = concatn(2, $1, $2);}
+	| function_specifier								/*auto*/
+	| alignment_specifier declaration_specifiers
+	| alignment_specifier
 	;
 
 init_declarator_list
@@ -214,14 +248,15 @@ init_declarator_list
 	;
 
 init_declarator
-	: declarator					/*auto*/		
-	| declarator '=' initializer	{$$ = concatn(3, $1, "=", $3);}
+	: declarator '=' initializer	{$$ = concatn(3, $1, "=", $3);}
+	| declarator					/*auto*/		
 	;
 
 storage_class_specifier
 	: TYPEDEF		/*auto*/
 	| EXTERN		/*auto*/
 	| STATIC		/*auto*/
+	| THREAD_LOCAL  /*auto*/
 	| AUTO			/*auto*/
 	| REGISTER		/*auto*/
 	;
@@ -239,14 +274,14 @@ type_specifier
 	| BOOL							/*auto*/
 	| COMPLEX						/*auto*/
 	| IMAGINARY						/*auto*/
+	| atomic_type_specifier			/*auto*/
 	| struct_or_union_specifier		/*auto*/
 	| enum_specifier				/*auto*/
-	| TYPE_NAME						/*auto*/
 	;
 
 struct_or_union_specifier
-	: struct_or_union IDENTIFIER '{' struct_declaration_list '}'	{$$ = concatn(5, $1, $2, "{", $4, "}");}
-	| struct_or_union '{' struct_declaration_list '}'				{$$ = concatn(4, $1, "{", $3, "}");}
+	: struct_or_union '{' struct_declaration_list '}'				{$$ = concatn(4, $1, "{", $3, "}");}
+	| struct_or_union IDENTIFIER '{' struct_declaration_list '}'	{$$ = concatn(5, $1, $2, "{", $4, "}");}
 	| struct_or_union IDENTIFIER									{$$ = concatn(2, $1, $2);}
 	;
 
@@ -261,7 +296,9 @@ struct_declaration_list
 	;
 
 struct_declaration
-	: specifier_qualifier_list struct_declarator_list ';'	{$$ = concatn(2, $1, $2);}
+	: specifier_qualifier_list ';'							{$$ = strdup($1);}
+	| specifier_qualifier_list struct_declarator_list ';'	{$$ = concatn(2, $1, $2);}
+	| static_assert_declaration								/*auto*/
 	;
 
 specifier_qualifier_list
@@ -276,16 +313,16 @@ struct_declarator_list
 	| struct_declarator_list ',' struct_declarator	{$$ = concatn(3, $1, ",", $3);}
 	;
 
-struct_declarator
-	: declarator							/*auto*/
-	| ':' constant_expression				{$$ = concatn(2, ":", $2);}
+struct_declarator							
+	: ':' constant_expression				{$$ = concatn(2, ":", $2);}
 	| declarator ':' constant_expression	{$$ = concatn(3, $1, ":", $3);}
+	| declarator							/*auto*/
 	;
 
 enum_specifier
 	: ENUM '{' enumerator_list '}'					{$$ = concatn(4, $1, "{", $3, "}");}
-	| ENUM IDENTIFIER '{' enumerator_list '}'		{$$ = concatn(5, $1, $2, "{", $4, "}");}
 	| ENUM '{' enumerator_list ',' '}'				{$$ = concatn(4, $1, "{", $3, ", }");}
+	| ENUM IDENTIFIER '{' enumerator_list '}'		{$$ = concatn(5, $1, $2, "{", $4, "}");}
 	| ENUM IDENTIFIER '{' enumerator_list ',' '}'	{$$ = concatn(5, $1, $2, "{", $4, ", }");}
 	| ENUM IDENTIFIER								{$$ = concatn(2, $1, $2);}
 	;
@@ -296,18 +333,29 @@ enumerator_list
 	;
 
 enumerator
-	: IDENTIFIER							/*auto*/
-	| IDENTIFIER '=' constant_expression	{$$ = concatn(3, $1, "=", $3);}
+	: IDENTIFIER '=' constant_expression	{$$ = concatn(3, $1, "=", $3);}
+	| IDENTIFIER							/*auto*/
+	;
+
+atomic_type_specifier
+	: ATOMIC '(' type_name ')'
 	;
 
 type_qualifier
 	: CONST			/*auto*/
 	| RESTRICT		/*auto*/
 	| VOLATILE		/*auto*/
+	| ATOMIC
 	;
 
 function_specifier
 	: INLINE		/*auto*/
+	| NORETURN		/*auto*/
+	;
+
+alignment_specifier
+	: ALIGNAS '(' type_name ')'
+	| ALIGNAS '(' constant_expression ')'
 	;
 
 declarator
@@ -319,24 +367,25 @@ declarator
 direct_declarator
 	: IDENTIFIER																	/*auto*/
 	| '(' declarator ')'
+	| direct_declarator '[' ']'
+	| direct_declarator '[' '*' ']'
+	| direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
+	| direct_declarator '[' STATIC assignment_expression ']'
+	| direct_declarator '[' type_qualifier_list '*' ']'
+	| direct_declarator '[' type_qualifier_list STATIC assignment_expression ']'
 	| direct_declarator '[' type_qualifier_list assignment_expression ']'
 	| direct_declarator '[' type_qualifier_list ']'
 	| direct_declarator '[' assignment_expression ']'
-	| direct_declarator '[' STATIC type_qualifier_list assignment_expression ']'
-	| direct_declarator '[' type_qualifier_list STATIC assignment_expression ']'
-	| direct_declarator '[' type_qualifier_list '*' ']'
-	| direct_declarator '[' '*' ']'
-	| direct_declarator '[' ']'
 	| direct_declarator '(' parameter_type_list ')'									{$$ = createproto($1, $3);}
-	| direct_declarator '(' identifier_list ')'
 	| direct_declarator '(' ')'
+	| direct_declarator '(' identifier_list ')'
 	;
 
 pointer
-	: '*'                               {$$ = "*";}
+	: '*' type_qualifier_list pointer   {$$ = concatn(3, "*", $2, $3);}
 	| '*' type_qualifier_list           {$$ = concatn(2, "*", $2);}
 	| '*' pointer                       {$$ = concatn(2, "*", $2);}
-	| '*' type_qualifier_list pointer   {$$ = concatn(3, "*", $2, $3);}
+	| '*'                               {$$ = "*";}
 	;
 
 type_qualifier_list
@@ -346,8 +395,8 @@ type_qualifier_list
 
 
 parameter_type_list
-	: parameter_list				/*auto*/
-	| parameter_list ',' ELLIPSIS	{$$ = concatn(3, $1, ",", $3);}
+	: parameter_list ',' ELLIPSIS	{$$ = concatn(3, $1, ",", $3);}
+	| parameter_list				/*auto*/
 	;
 
 parameter_list
@@ -367,24 +416,34 @@ identifier_list
 	;
 
 type_name
-	: specifier_qualifier_list
-	| specifier_qualifier_list abstract_declarator
+	: specifier_qualifier_list abstract_declarator
+	| specifier_qualifier_list						/*auto*/
 	;
 
 abstract_declarator
-	: pointer
-	| direct_abstract_declarator
-	| pointer direct_abstract_declarator
+	: pointer direct_abstract_declarator
+	| pointer								/*auto*/
+	| direct_abstract_declarator			/*auto*/
 	;
 
 direct_abstract_declarator
 	: '(' abstract_declarator ')'
 	| '[' ']'
+	| '[' '*' ']'
+	| '[' STATIC type_qualifier_list assignment_expression ']'
+	| '[' STATIC assignment_expression ']'
+	| '[' type_qualifier_list STATIC assignment_expression ']'
+	| '[' type_qualifier_list assignment_expression ']'
+	| '[' type_qualifier_list ']'
 	| '[' assignment_expression ']'
 	| direct_abstract_declarator '[' ']'
-	| direct_abstract_declarator '[' assignment_expression ']'
-	| '[' '*' ']'
 	| direct_abstract_declarator '[' '*' ']'
+	| direct_abstract_declarator '[' STATIC type_qualifier_list assignment_expression ']'
+	| direct_abstract_declarator '[' STATIC assignment_expression ']'
+	| direct_abstract_declarator '[' type_qualifier_list assignment_expression ']'
+	| direct_abstract_declarator '[' type_qualifier_list STATIC assignment_expression ']'
+	| direct_abstract_declarator '[' type_qualifier_list ']'
+	| direct_abstract_declarator '[' assignment_expression ']'
 	| '(' ')'
 	| '(' parameter_type_list ')'
 	| direct_abstract_declarator '(' ')'
@@ -392,16 +451,16 @@ direct_abstract_declarator
 	;
 
 initializer
-	: assignment_expression
-	| '{' initializer_list '}'
+	: '{' initializer_list '}'
 	| '{' initializer_list ',' '}'
+	| assignment_expression
 	;
 
 initializer_list
-	: initializer
-	| designation initializer
-	| initializer_list ',' initializer
+	: designation initializer
+	| initializer
 	| initializer_list ',' designation initializer
+	| initializer_list ',' initializer
 	;
 
 designation
@@ -416,6 +475,10 @@ designator_list
 designator
 	: '[' constant_expression ']'
 	| '.' IDENTIFIER
+	;
+
+static_assert_declaration
+	: STATIC_ASSERT '(' constant_expression ',' STRING_LITERAL ')' ';'
 	;
 
 statement
@@ -454,8 +517,8 @@ expression_statement
 	;
 
 selection_statement
-	: IF '(' expression ')' statement
-	| IF '(' expression ')' statement ELSE statement
+	: IF '(' expression ')' statement ELSE statement
+	| IF '(' expression ')' statement
 	| SWITCH '(' expression ')' statement
 	;
 
@@ -532,6 +595,7 @@ char *concatn(int n, ...) {
 }
 
 void yyerror(char *msg) {
+	fflush(stdout);
     fprintf(stderr, "Parser error: %s\n", msg);
     exit(1);
 }
