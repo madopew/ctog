@@ -77,7 +77,8 @@ char *currentcalls = NULL;
 
 #define SWIS "<switch>"
 #define SWIE "</switch>"
-#define LABS "<labelstatement label ="
+#define LABS "<labelstatement>"
+#define LABE "</labelstatement>"
 
 #define GOTS "<goto>"
 #define GOTE "</gote>"
@@ -119,7 +120,7 @@ generic_assoc_list
 
 generic_association
 	: type_name ':' assignment_expression
-	| DEFAULT ':' assignment_expression
+	| DEFAULT ':' assignment_expression		
 	;
 
 postfix_expression
@@ -523,9 +524,9 @@ statement
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement					{$$ = concatn(5, LABS, "\"", $1, "\"/>", $2); freen(3, $1, $2, $3);}								
-	| CASE constant_expression ':' statement	{$$ = concatn(5, LABS, "\"", $2, "\"/>", $4); freen(4, $1, $2, $3, $4);}
-	| DEFAULT ':' statement						{$$ = concatn(3, LABS, "\"default\"/>", $3); freen(3, $1, $2, $3);}
+	: IDENTIFIER ':' statement					{$$ = concatn(4, LABS, $1, LABE, $3); freen(3, $1, $2, $3);}								
+	| CASE constant_expression ':' statement	{$$ = concatn(4, LABS, $2, LABE, $4); freen(4, $1, $2, $3, $4);}
+	| DEFAULT ':' statement						{$$ = concatn(4, LABS, $1, LABE, $3); freen(3, $1, $2, $3);}
 	;
 
 compound_statement  
