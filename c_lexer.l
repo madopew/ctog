@@ -110,7 +110,7 @@ static void comment(void);
 "*="			{ COPYVALUE; return MUL_ASSIGN; }
 "/="			{ COPYVALUE; return DIV_ASSIGN; }
 "%="			{ COPYVALUE; return MOD_ASSIGN; }
-"&="			{ COPYVALUE; return AND_ASSIGN; }
+"&="			{ yylval = strdup("&amp;=");; return AND_ASSIGN; }
 "^="			{ COPYVALUE; return XOR_ASSIGN; }
 "|="			{ COPYVALUE; return OR_ASSIGN; }
 ">>"			{ yylval = strdup("&gt;&gt;"); return RIGHT_OP; }
@@ -118,7 +118,7 @@ static void comment(void);
 "++"			{ COPYVALUE; return INC_OP; }
 "--"			{ COPYVALUE; return DEC_OP; }
 "->"			{ yylval = strdup("-&gt;"); return PTR_OP; }
-"&&"			{ COPYVALUE; return AND_OP; }
+"&&"			{ yylval = strdup("&amp;&amp;"); return AND_OP; }
 "||"			{ COPYVALUE; return OR_OP; }
 "<="			{ yylval = strdup("&lt;="); return LE_OP; }
 ">="			{ yylval = strdup("&gt;="); return GE_OP; }
@@ -135,7 +135,7 @@ static void comment(void);
 "["		        { COPYVALUE; return '['; }
 "]"     		{ COPYVALUE; return ']'; }
 "."			    { COPYVALUE; return '.'; }
-"&"			    { COPYVALUE; return '&'; }
+"&"			    { yylval = strdup("&amp;"); return '&'; }
 "!"			    { COPYVALUE; return '!'; }
 "~"			    { COPYVALUE; return '~'; }
 "-"			    { COPYVALUE; return '-'; }
