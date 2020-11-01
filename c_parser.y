@@ -20,23 +20,32 @@
 
 %start program_unit
 
-
 %{
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
 
+#define YYDEBUG 1
+extern int yydebug;
+
 int yylex();
 void yyerror(char *);
 char *concatn(int n, ...);
+void freen(int n, ...);
 char *createfunc(char *, char *, char *);
-char *createfunccall(char *, char *);
+void addfunccall(char *, char *);
+char *createexp(char *);
+char *createifelse(char *, char *, char *);
 
-#define EXPS "<expression>"
+char *currentcalls = NULL;
+
+#define EXPS "<expression"
 #define EXPE "</expression>"
-#define SUBS "<sub>"
-#define SUBE "</sub>"
+#define HASC "hascalls = \"true\">"
+#define DHAC "hascalls = \"false\">"
+#define TEXS "<text>"
+#define TEXE "</text>"
 
 #define DECS "<declaration>"
 #define DECE "</declaration>"
@@ -55,26 +64,34 @@ char *createfunccall(char *, char *);
 #define ARGS "<arguments>"
 #define ARGE "</arguments>"
 
+#define IFSS "<if>"
+#define IFSE "</if>"
+#define CONS "<condition>"
+#define CONE "</condition>"
+#define IFBS "<ifbody>"
+#define IFBE "</ifbody>"
+#define ELBS "<elsebody>"
+#define ELBE "</elsebody>"
 %}
 
 %%
 
 primary_expression
-	: IDENTIFIER 			/*auto*/		
-	| constant 				/*auto*/
-	| string 				/*auto*/
-	| '(' expression ')'	{ $$ = concatn(3, "(", $2, ")");}
-	| generic_selection		/*auto*/
+	: IDENTIFIER 			{$$ = strdup($1); free($1);}		
+	| constant 				{$$ = strdup($1); free($1);}
+	| string 				{$$ = strdup($1); free($1);}
+	| '(' expression ')'	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| generic_selection		{$$ = strdup($1); free($1);}
 	;
 
 constant
-	: I_CONSTANT		/*auto*/	
-	| F_CONSTANT		/*auto*/
+	: I_CONSTANT		{ $$ = strdup($1); free($1);}	
+	| F_CONSTANT		{ $$ = strdup($1); free($1);}
 	;
 
 string
-	: STRING_LITERAL	/*auto*/
-	| FUNC_NAME			/*auto*/
+	: STRING_LITERAL	{ $$ = strdup($1); free($1);}
+	| FUNC_NAME			{ $$ = strdup($1); free($1);}
 	;
 
 generic_selection
@@ -82,7 +99,7 @@ generic_selection
 	;
 
 generic_assoc_list
-	: generic_association							/*auto*/
+	: generic_association							{$$ = strdup($1); free($1);}
 	| generic_assoc_list ',' generic_association
 	;
 
@@ -92,10 +109,10 @@ generic_association
 	;
 
 postfix_expression
-	: primary_expression                                    /*auto*/
+	: primary_expression                                    {$$ = strdup($1); free($1);}
 	| postfix_expression '[' expression ']'
 	| postfix_expression '(' ')'
-	| postfix_expression '(' argument_expression_list ')'	{$$ = createfunccall($1, $3);}
+	| postfix_expression '(' argument_expression_list ')'	{$$ = concatn(4, $1, $2, $3, $4); addfunccall($1, $3); freen(4, $1, $2, $3, $4);}
 	| postfix_expression '.' IDENTIFIER
 	| postfix_expression PTR_OP IDENTIFIER
 	| postfix_expression INC_OP
@@ -105,237 +122,237 @@ postfix_expression
 	;
 
 argument_expression_list
-	: assignment_expression									/*auto*/
-	| argument_expression_list ',' assignment_expression	{$$ = concatn(3, $1, ",", $3);}
+	: assignment_expression									{$$ = strdup($1); free($1);}
+	| argument_expression_list ',' assignment_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 unary_expression
-	: postfix_expression				/*auto*/
-	| INC_OP unary_expression			{$$ = concatn(2, $1, $2);}
-	| DEC_OP unary_expression			{$$ = concatn(2, $1, $2);}
-	| unary_operator cast_expression	{$$ = concatn(2, $1, $2);}
-	| SIZEOF unary_expression			{$$ = concatn(2, $1, $2);}
-	| SIZEOF '(' type_name ')'			{$$ = concatn(4, $1, "(", $3, ")");}
-	| ALIGNOF '(' type_name ')'
+	: postfix_expression				{$$ = strdup($1); free($1);}
+	| INC_OP unary_expression			{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| DEC_OP unary_expression			{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| unary_operator cast_expression	{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| SIZEOF unary_expression			{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| SIZEOF '(' type_name ')'			{$$ = concatn(4, $1, $2, $3, $4); freen(4, $1, $2, $3, $4);}
+	| ALIGNOF '(' type_name ')'			{$$ = concatn(4, $1, $2, $3, $4); freen(4, $1, $2, $3, $4);}
 	;
 
 unary_operator
-	: '&'	{$$ = "&";}
-	| '*' 	{$$ = "*";}
-	| '+' 	{$$ = "+";}
-	| '-' 	{$$ = "-";}
-	| '~' 	{$$ = "~";}
-	| '!' 	{$$ = "!";}
+	: '&'	{ $$ = strdup($1); free($1);}
+	| '*' 	{ $$ = strdup($1); free($1);}
+	| '+' 	{ $$ = strdup($1); free($1);}
+	| '-' 	{ $$ = strdup($1); free($1);}
+	| '~' 	{ $$ = strdup($1); free($1);}
+	| '!' 	{ $$ = strdup($1); free($1);}
 	;
 
 cast_expression
-	: unary_expression						/*auto*/
-	| '(' type_name ')' cast_expression		{$$ = concatn(4, "(", $2, ")", $4);}
+	: unary_expression						{$$ = strdup($1); free($1);}
+	| '(' type_name ')' cast_expression		{$$ = concatn(4, $1, $2, $3, $4); freen(4, $1, $2, $3, $4);}
 	;
 
 multiplicative_expression
-	: cast_expression									/*auto*/
-	| multiplicative_expression '*' cast_expression		{$$ = concatn(3, $1, "*", $3);}
-	| multiplicative_expression '/' cast_expression		{$$ = concatn(3, $1, "/", $3);}
-	| multiplicative_expression '%' cast_expression		{$$ = concatn(3, $1, "%", $3);}
+	: cast_expression									{$$ = strdup($1); free($1);}
+	| multiplicative_expression '*' cast_expression		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| multiplicative_expression '/' cast_expression		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| multiplicative_expression '%' cast_expression		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 additive_expression
-	: multiplicative_expression								/*auto*/
-	| additive_expression '+' multiplicative_expression		{$$ = concatn(3, $1, "+", $3);}
-	| additive_expression '-' multiplicative_expression		{$$ = concatn(3, $1, "-", $3);}
+	: multiplicative_expression								{$$ = strdup($1); free($1);}
+	| additive_expression '+' multiplicative_expression		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| additive_expression '-' multiplicative_expression		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 shift_expression
-	: additive_expression								/*auto*/
-	| shift_expression LEFT_OP additive_expression		{$$ = concatn(3, $1, $2, $3);}
-	| shift_expression RIGHT_OP additive_expression		{$$ = concatn(3, $1, $2, $3);}
+	: additive_expression								{ $$ = strdup($1); free($1);}
+	| shift_expression LEFT_OP additive_expression		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| shift_expression RIGHT_OP additive_expression		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 relational_expression
-	: shift_expression								/*auto*/
-	| relational_expression '<' shift_expression	{$$ = concatn(3, $1, "<", $3);}
-	| relational_expression '>' shift_expression	{$$ = concatn(3, $1, ">", $3);}
-	| relational_expression LE_OP shift_expression	{$$ = concatn(3, $1, $2, $3);}
-	| relational_expression GE_OP shift_expression	{$$ = concatn(3, $1, $2, $3);}
+	: shift_expression								{ $$ = strdup($1); free($1);}
+	| relational_expression '<' shift_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| relational_expression '>' shift_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| relational_expression LE_OP shift_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| relational_expression GE_OP shift_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 equality_expression
-	: relational_expression								/*auto*/
-	| equality_expression EQ_OP relational_expression	{$$ = concatn(3, $1, $2, $3);}
-	| equality_expression NE_OP relational_expression	{$$ = concatn(3, $1, $2, $3);}
+	: relational_expression								{ $$ = strdup($1); free($1);}
+	| equality_expression EQ_OP relational_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| equality_expression NE_OP relational_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 and_expression
-	: equality_expression						/*auto*/
-	| and_expression '&' equality_expression	{$$ = concatn(3, $1, "&", $3);}
+	: equality_expression						{ $$ = strdup($1); free($1);}
+	| and_expression '&' equality_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 exclusive_or_expression
-	: and_expression								/*auto*/
-	| exclusive_or_expression '^' and_expression	{$$ = concatn(3, $1, "^", $3);}
+	: and_expression								{ $$ = strdup($1); free($1);}
+	| exclusive_or_expression '^' and_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 inclusive_or_expression
-	: exclusive_or_expression								/*auto*/
-	| inclusive_or_expression '|' exclusive_or_expression	{$$ = concatn(3, $1, "|", $3);}
+	: exclusive_or_expression								{ $$ = strdup($1); free($1);}
+	| inclusive_or_expression '|' exclusive_or_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 logical_and_expression
-	: inclusive_or_expression									/*auto*/
-	| logical_and_expression AND_OP inclusive_or_expression		{$$ = concatn(3, $1, $2, $3);}
+	: inclusive_or_expression									{ $$ = strdup($1); free($1);}
+	| logical_and_expression AND_OP inclusive_or_expression		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 logical_or_expression
-	: logical_and_expression								/*auto*/
-	| logical_or_expression OR_OP logical_and_expression	{$$ = concatn(3, $1, $2, $3);}
+	: logical_and_expression								{ $$ = strdup($1); free($1);}
+	| logical_or_expression OR_OP logical_and_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 conditional_expression
-	: logical_or_expression												/*auto*/
-	| logical_or_expression '?' expression ':' conditional_expression	{$$ = concatn(5, $1, "?", $3, ":", $5);}
+	: logical_or_expression												{ $$ = strdup($1); free($1);}
+	| logical_or_expression '?' expression ':' conditional_expression	{$$ = concatn(5, $1, $2, $3, $4, $5); freen(5, $1, $2, $3, $4, $5);}
 	;
 
 assignment_expression
-	: conditional_expression										/*auto*/
-	| unary_expression assignment_operator assignment_expression	{$$ = concatn(3, $1, $2, $3);}
+	: conditional_expression										{ $$ = strdup($1); free($1);}
+	| unary_expression assignment_operator assignment_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 assignment_operator
-	: '='			{$$ = "=";}
-	| MUL_ASSIGN	/*auto*/
-	| DIV_ASSIGN	/*auto*/
-	| MOD_ASSIGN	/*auto*/
-	| ADD_ASSIGN	/*auto*/
-	| SUB_ASSIGN	/*auto*/
-	| LEFT_ASSIGN	/*auto*/
-	| RIGHT_ASSIGN	/*auto*/
-	| AND_ASSIGN	/*auto*/
-	| XOR_ASSIGN	/*auto*/
-	| OR_ASSIGN		/*auto*/
+	: '='			{ $$ = strdup($1); free($1);}
+	| MUL_ASSIGN	{ $$ = strdup($1); free($1);}
+	| DIV_ASSIGN	{ $$ = strdup($1); free($1);}
+	| MOD_ASSIGN	{ $$ = strdup($1); free($1);}
+	| ADD_ASSIGN	{ $$ = strdup($1); free($1);}
+	| SUB_ASSIGN	{ $$ = strdup($1); free($1);}
+	| LEFT_ASSIGN	{ $$ = strdup($1); free($1);}
+	| RIGHT_ASSIGN	{ $$ = strdup($1); free($1);}
+	| AND_ASSIGN	{ $$ = strdup($1); free($1);}
+	| XOR_ASSIGN	{ $$ = strdup($1); free($1);}
+	| OR_ASSIGN		{ $$ = strdup($1); free($1);}
 	;
 
 expression
-	: assignment_expression					/*auto*/
-	| expression ',' assignment_expression	{$$ = concatn(3, $1, ",", $3);}
+	: assignment_expression					{ $$ = strdup($1); free($1);}
+	| expression ',' assignment_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 constant_expression
-	: conditional_expression	/*auto*/
+	: conditional_expression	{ $$ = strdup($1); free($1);}
 	;
 
 declaration
-	: declaration_specifiers ';'						{$$ = concatn(3, DECS, $1, DECE);}
-	| declaration_specifiers init_declarator_list ';'	{$$ = concatn(4, DECS, $1, $2, DECE);}
-	| static_assert_declaration							/*auto*/
+	: declaration_specifiers ';'						{$$ = concatn(3, DECS, $1, DECE); freen(2, $1, $2);}
+	| declaration_specifiers init_declarator_list ';'	{$$ = concatn(4, DECS, $1, $2, DECE); freen(3, $1, $2, $3);}
+	| static_assert_declaration							{ $$ = strdup($1); free($1);}
 	;
 
 declaration_specifiers
-	: storage_class_specifier declaration_specifiers	{$$ = concatn(2, $1, $2);}
-	| storage_class_specifier							/*auto*/
-	| type_specifier declaration_specifiers				{$$ = concatn(2, $1, $2);}
-	| type_specifier									/*auto*/
-	| type_qualifier declaration_specifiers				{$$ = concatn(2, $1, $2);}
-	| type_qualifier									/*auto*/
-	| function_specifier declaration_specifiers			{$$ = concatn(2, $1, $2);}
-	| function_specifier								/*auto*/
+	: storage_class_specifier declaration_specifiers	{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| storage_class_specifier							{ $$ = strdup($1); free($1);}
+	| type_specifier declaration_specifiers				{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| type_specifier									{ $$ = strdup($1); free($1);}
+	| type_qualifier declaration_specifiers				{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| type_qualifier									{ $$ = strdup($1); free($1);}
+	| function_specifier declaration_specifiers			{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| function_specifier								{ $$ = strdup($1); free($1);}
 	| alignment_specifier declaration_specifiers
 	| alignment_specifier
 	;
 
 init_declarator_list
-	: init_declarator								/*auto*/	
-	| init_declarator_list ',' init_declarator		{$$ = concatn(3, $1, ",", $3);}
+	: init_declarator								{ $$ = strdup($1); free($1);}	
+	| init_declarator_list ',' init_declarator		{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 init_declarator
-	: declarator '=' initializer	{$$ = concatn(3, $1, "=", $3);}
-	| declarator					/*auto*/		
+	: declarator '=' initializer	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| declarator					{ $$ = strdup($1); free($1);}		
 	;
 
 storage_class_specifier
-	: TYPEDEF		/*auto*/
-	| EXTERN		/*auto*/
-	| STATIC		/*auto*/
-	| THREAD_LOCAL  /*auto*/
-	| AUTO			/*auto*/
-	| REGISTER		/*auto*/
+	: TYPEDEF		{ $$ = strdup($1); free($1);}
+	| EXTERN		{ $$ = strdup($1); free($1);}
+	| STATIC		{ $$ = strdup($1); free($1);}
+	| THREAD_LOCAL  { $$ = strdup($1); free($1);}
+	| AUTO			{ $$ = strdup($1); free($1);}
+	| REGISTER		{ $$ = strdup($1); free($1);}
 	;
 
 type_specifier
-	: VOID							/*auto*/
-	| CHAR							/*auto*/
-	| SHORT							/*auto*/
-	| INT							/*auto*/
-	| LONG							/*auto*/
-	| FLOAT							/*auto*/
-	| DOUBLE						/*auto*/
-	| SIGNED						/*auto*/
-	| UNSIGNED						/*auto*/
-	| BOOL							/*auto*/
-	| COMPLEX						/*auto*/
-	| IMAGINARY						/*auto*/
-	| atomic_type_specifier			/*auto*/
-	| struct_or_union_specifier		/*auto*/
-	| enum_specifier				/*auto*/
+	: VOID							{ $$ = strdup($1); free($1);}
+	| CHAR							{ $$ = strdup($1); free($1);}
+	| SHORT							{ $$ = strdup($1); free($1);}
+	| INT							{ $$ = strdup($1); free($1);}
+	| LONG							{ $$ = strdup($1); free($1);}
+	| FLOAT							{ $$ = strdup($1); free($1);}
+	| DOUBLE						{ $$ = strdup($1); free($1);}
+	| SIGNED						{ $$ = strdup($1); free($1);}
+	| UNSIGNED						{ $$ = strdup($1); free($1);}
+	| BOOL							{ $$ = strdup($1); free($1);}
+	| COMPLEX						{ $$ = strdup($1); free($1);}
+	| IMAGINARY						{ $$ = strdup($1); free($1);}
+	| atomic_type_specifier			{ $$ = strdup($1); free($1);}
+	| struct_or_union_specifier		{ $$ = strdup($1); free($1);}
+	| enum_specifier				{ $$ = strdup($1); free($1);}
 	;
 
 struct_or_union_specifier
-	: struct_or_union '{' struct_declaration_list '}'				{$$ = concatn(4, $1, "{", $3, "}");}
-	| struct_or_union IDENTIFIER '{' struct_declaration_list '}'	{$$ = concatn(5, $1, $2, "{", $4, "}");}
-	| struct_or_union IDENTIFIER									{$$ = concatn(2, $1, $2);}
+	: struct_or_union '{' struct_declaration_list '}'				{$$ = concatn(4, $1, $2, $3, $4); freen(4, $1, $2, $3, $4);}
+	| struct_or_union IDENTIFIER '{' struct_declaration_list '}'	{$$ = concatn(5, $1, $2, $3, $4, $5); freen(5, $1, $2, $3, $4, $5);}
+	| struct_or_union IDENTIFIER									{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
 	;
 
 struct_or_union
-	: STRUCT	/*auto*/
-	| UNION		/*auto*/
+	: STRUCT	{ $$ = strdup($1); free($1);}
+	| UNION		{ $$ = strdup($1); free($1);}
 	;
 
 struct_declaration_list
-	: struct_declaration							/*auto*/
-	| struct_declaration_list struct_declaration	{$$ = concatn(2, $1, $2);}
+	: struct_declaration							{ $$ = strdup($1); free($1);}
+	| struct_declaration_list struct_declaration	{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
 	;
 
 struct_declaration
-	: specifier_qualifier_list ';'							{$$ = strdup($1);}
-	| specifier_qualifier_list struct_declarator_list ';'	{$$ = concatn(2, $1, $2);}
-	| static_assert_declaration								/*auto*/
+	: specifier_qualifier_list ';'							{$$ = strdup($1); freen(2, $1, $2);}
+	| specifier_qualifier_list struct_declarator_list ';'	{$$ = concatn(2, $1, $2); freen(3, $1, $2, $3);}
+	| static_assert_declaration								{ $$ = strdup($1); free($1);}
 	;
 
 specifier_qualifier_list
-	: type_specifier specifier_qualifier_list		{$$ = concatn(2, $1, $2);}
-	| type_specifier								/*auto*/
-	| type_qualifier specifier_qualifier_list		{$$ = concatn(2, $1, $2);}
-	| type_qualifier								/*auto*/
+	: type_specifier specifier_qualifier_list		{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| type_specifier								{ $$ = strdup($1); free($1);}
+	| type_qualifier specifier_qualifier_list		{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| type_qualifier								{ $$ = strdup($1); free($1);}
 	;
 
 struct_declarator_list
-	: struct_declarator								/*auto*/
-	| struct_declarator_list ',' struct_declarator	{$$ = concatn(3, $1, ",", $3);}
+	: struct_declarator								{ $$ = strdup($1); free($1);}
+	| struct_declarator_list ',' struct_declarator	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 struct_declarator							
-	: ':' constant_expression				{$$ = concatn(2, ":", $2);}
-	| declarator ':' constant_expression	{$$ = concatn(3, $1, ":", $3);}
-	| declarator							/*auto*/
+	: ':' constant_expression				{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| declarator ':' constant_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| declarator							{ $$ = strdup($1); free($1);}
 	;
 
 enum_specifier
-	: ENUM '{' enumerator_list '}'					{$$ = concatn(4, $1, "{", $3, "}");}
-	| ENUM '{' enumerator_list ',' '}'				{$$ = concatn(4, $1, "{", $3, ", }");}
-	| ENUM IDENTIFIER '{' enumerator_list '}'		{$$ = concatn(5, $1, $2, "{", $4, "}");}
-	| ENUM IDENTIFIER '{' enumerator_list ',' '}'	{$$ = concatn(5, $1, $2, "{", $4, ", }");}
-	| ENUM IDENTIFIER								{$$ = concatn(2, $1, $2);}
+	: ENUM '{' enumerator_list '}'					{$$ = concatn(4, $1, $2, $3, $4); freen(4, $1, $2, $3, $4);}
+	| ENUM '{' enumerator_list ',' '}'				{$$ = concatn(5, $1, $2, $3, $4, $5); freen(5, $1, $2, $3, $4, $5);}
+	| ENUM IDENTIFIER '{' enumerator_list '}'		{$$ = concatn(5, $1, $2, $3, $4, $5); freen(5, $1, $2, $3, $4, $5);}
+	| ENUM IDENTIFIER '{' enumerator_list ',' '}'	{$$ = concatn(6, $1, $2, $3, $4, $5, $6); freen(6, $1, $2, $3, $4, $5, $6);}
+	| ENUM IDENTIFIER								{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
 	;
 
 enumerator_list
-	: enumerator						/*auto*/
-	| enumerator_list ',' enumerator	{$$ = concatn(3, $1, ",", $3);}
+	: enumerator						{ $$ = strdup($1); free($1);}
+	| enumerator_list ',' enumerator	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 enumerator
-	: IDENTIFIER '=' constant_expression	{$$ = concatn(3, $1, "=", $3);}
-	| IDENTIFIER							/*auto*/
+	: IDENTIFIER '=' constant_expression	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| IDENTIFIER							{ $$ = strdup($1); free($1);}
 	;
 
 atomic_type_specifier
@@ -343,15 +360,15 @@ atomic_type_specifier
 	;
 
 type_qualifier
-	: CONST			/*auto*/
-	| RESTRICT		/*auto*/
-	| VOLATILE		/*auto*/
-	| ATOMIC		/*auto*/
+	: CONST			{ $$ = strdup($1); free($1);}
+	| RESTRICT		{ $$ = strdup($1); free($1);}
+	| VOLATILE		{ $$ = strdup($1); free($1);}
+	| ATOMIC		{ $$ = strdup($1); free($1);}
 	;
 
 function_specifier
-	: INLINE		/*auto*/
-	| NORETURN		/*auto*/
+	: INLINE		{ $$ = strdup($1); free($1);}
+	| NORETURN		{ $$ = strdup($1); free($1);}
 	;
 
 alignment_specifier
@@ -360,13 +377,13 @@ alignment_specifier
 	;
 
 declarator
-	: pointer direct_declarator		{$$ = concatn(2, $1, $2);}	
-	| direct_declarator				/*auto*/
+	: pointer direct_declarator		{$$ = concatn(2, $1, $2); freen(2, $1, $2);}	
+	| direct_declarator				{ $$ = strdup($1); free($1);}
 	;
 
 
 direct_declarator
-	: IDENTIFIER																	/*auto*/
+	: IDENTIFIER																	{ $$ = strdup($1); free($1);}
 	| '(' declarator ')'
 	| direct_declarator '[' ']'
 	| direct_declarator '[' '*' ']'
@@ -377,54 +394,54 @@ direct_declarator
 	| direct_declarator '[' type_qualifier_list assignment_expression ']'
 	| direct_declarator '[' type_qualifier_list ']'
 	| direct_declarator '[' assignment_expression ']'
-	| direct_declarator '(' parameter_type_list ')'									{$$ = concatn(4, $1, "(", $3, ")");}
+	| direct_declarator '(' parameter_type_list ')'									{$$ = concatn(4, $1, $2, $3, $4); freen(4, $1, $2, $3, $4);}
 	| direct_declarator '(' ')'
 	| direct_declarator '(' identifier_list ')'
 	;
 
 pointer
-	: '*' type_qualifier_list pointer   {$$ = concatn(3, "*", $2, $3);}
-	| '*' type_qualifier_list           {$$ = concatn(2, "*", $2);}
-	| '*' pointer                       {$$ = concatn(2, "*", $2);}
-	| '*'                               {$$ = "*";}
+	: '*' type_qualifier_list pointer   {$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| '*' type_qualifier_list           {$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| '*' pointer                       {$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| '*'                               {$$ = strdup($1); free($1);}
 	;
 
 type_qualifier_list
-	: type_qualifier                        /*auto*/
-	| type_qualifier_list type_qualifier	{$$ = concatn(2, $1, $2);}
+	: type_qualifier                        { $$ = strdup($1); free($1);}
+	| type_qualifier_list type_qualifier	{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
 	;
 
 
 parameter_type_list
-	: parameter_list ',' ELLIPSIS	{$$ = concatn(3, $1, ",", $3);}
-	| parameter_list				/*auto*/
+	: parameter_list ',' ELLIPSIS	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
+	| parameter_list				{ $$ = strdup($1); free($1);}
 	;
 
 parameter_list
-	: parameter_declaration						/*auto*/
-	| parameter_list ',' parameter_declaration	{$$ = concatn(3, $1, ",", $3);}
+	: parameter_declaration						{ $$ = strdup($1); free($1);}
+	| parameter_list ',' parameter_declaration	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 parameter_declaration
-	: declaration_specifiers declarator				{$$ = concatn(2, $1, $2);}
-	| declaration_specifiers abstract_declarator	{$$ = concatn(2, $1, $2);}
-	| declaration_specifiers						/*auto*/
+	: declaration_specifiers declarator				{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| declaration_specifiers abstract_declarator	{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| declaration_specifiers						{ $$ = strdup($1); free($1);}
 	;
 
 identifier_list
-	: IDENTIFIER						/*auto*/
-	| identifier_list ',' IDENTIFIER	{$$ = concatn(3, $1, ",", $3);}
+	: IDENTIFIER						{ $$ = strdup($1); free($1);}
+	| identifier_list ',' IDENTIFIER	{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 type_name
 	: specifier_qualifier_list abstract_declarator
-	| specifier_qualifier_list						/*auto*/
+	| specifier_qualifier_list						{ $$ = strdup($1); free($1);}
 	;
 
 abstract_declarator
-	: pointer direct_abstract_declarator	{$$ = concatn(2, $1, $2);}
-	| pointer								/*auto*/
-	| direct_abstract_declarator			/*auto*/
+	: pointer direct_abstract_declarator	{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| pointer								{ $$ = strdup($1); free($1);}
+	| direct_abstract_declarator			{ $$ = strdup($1); free($1);}
 	;
 
 direct_abstract_declarator
@@ -484,8 +501,8 @@ static_assert_declaration
 
 statement
 	: labeled_statement
-	| compound_statement        /*auto*/
-	| expression_statement      {$$ = concatn(3, EXPS, $1, EXPE);}
+	| compound_statement        { $$ = strdup($1); free($1);}
+	| expression_statement      {$$ = createexp($1); free($1);}
 	| selection_statement       
 	| iteration_statement
 	| jump_statement
@@ -498,28 +515,28 @@ labeled_statement
 	;
 
 compound_statement  
-	: '{' '}'                       {/*empty block skipped*/}
+	: '{' '}'                       {freen(2, $1, $2);}
 	| '{' block_item_list '}'       {$$ = strdup($2);}
 	;
 
 block_item_list
-	: block_item                    /*auto*/
-	| block_item_list block_item    {$$ = concatn(2, $1, $2);}
+	: block_item                    { $$ = strdup($1); free($1);}
+	| block_item_list block_item    {$$ = concatn(2, $1, $2); freen(2, $1, $2);}
 	;
 
 block_item
-	: declaration   /*auto*/
-	| statement     /*auto*/
+	: declaration   { $$ = strdup($1); free($1);}
+	| statement     { $$ = strdup($1); free($1);}
 	;
 
 expression_statement
-	: ';'				{/*empty expression skipped*/}
-	| expression ';'	/*auto*/
+	: ';'				{free($1);}
+	| expression ';'	{ $$ = strdup($1); free($1);}
 	;
 
 selection_statement
-	: IF '(' expression ')' statement ELSE statement
-	| IF '(' expression ')' statement
+	: IF '(' expression ')' statement ELSE statement 	{$$ = createifelse($3, $5, $7); freen(7, $1, $2, $3, $4, $5, $6, $7);}
+	| IF '(' expression ')' statement					{$$ = createifelse($3, $5, NULL); freen(5, $1, $2, $3, $4, $5);}
 	| SWITCH '(' expression ')' statement
 	;
 
@@ -541,22 +558,22 @@ jump_statement
 	;
 
 program_unit
-	: translation_unit		{$$ = concatn(3, "<program>", $1, "</program>");printf("%s", $$);}
+	: translation_unit		{$$ = concatn(3, "<program>", $1, "</program>");printf("%s", $$); free($1); free($$);}
 	;
 
 translation_unit
-	: external_declaration						{$$ = strdup($1);}
-	| translation_unit external_declaration		{$$ = concatn(2, $1, $2);}
+	: external_declaration						{$$ = strdup($1); free($1);}
+	| translation_unit external_declaration		{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
 	;
 
 external_declaration
-	: function_definition	/*auto*/
-	| declaration			/*auto*/
+	: function_definition	{ $$ = strdup($1); free($1);}
+	| declaration			{ $$ = strdup($1); free($1);}
 	;
 
 function_definition
 	: declaration_specifiers declarator declaration_list compound_statement
-	| declaration_specifiers declarator compound_statement      				{$$ = createfunc($1, $2, $3);}            
+	| declaration_specifiers declarator compound_statement      				{$$ = createfunc($1, $2, $3); freen(3, $1, $2, $3);}            
 	;
 
 declaration_list
@@ -566,12 +583,34 @@ declaration_list
 
 %%
 
-char *createfunccall(char *funcname, char *args) {
-	return concatn(8, CALS, NAMS, funcname, NAME, ARGS,  args, ARGE, CALE);
+char *createifelse(char *condition, char *ifbody, char *elsebody) {
+	if(!elsebody)
+		return concatn(11, IFSS, CONS, condition, CONE, IFBS, ifbody, IFBE, ELBS, elsebody, ELBE, IFSE);
+	return concatn(8, IFSS, CONS, condition, CONE, IFBS, ifbody, IFBE, IFSE);
+}
+
+char *createexp(char *exp) {
+	char *toreturn = NULL;
+	if(currentcalls) {
+		toreturn = concatn(7, EXPS, HASC, currentcalls, TEXS, exp, TEXE, EXPE);
+		free(currentcalls);
+		currentcalls = NULL;
+	} else {
+		toreturn = concatn(6, EXPS, DHAC, TEXS, exp, TEXE, EXPE);
+	}
+	return toreturn;
+}
+
+void addfunccall(char *funcname, char *args) {
+	if(currentcalls)
+		currentcalls = concatn(9, currentcalls, CALS, NAMS, funcname, NAME, ARGS,  args, ARGE, CALE);
+	else 
+		currentcalls = concatn(8, CALS, NAMS, funcname, NAME, ARGS,  args, ARGE, CALE);
 }
 
 char *createfunc(char *specifiers, char *prototype, char *body) {
-	return concatn(9, FUNS, PROS, specifiers, prototype, PROE, BODS, body, BODE, FUNE);
+	char *toreturn = concatn(9, FUNS, PROS, specifiers, prototype, PROE, BODS, body, BODE, FUNE);
+	return toreturn;
 }
 
 char *concatn(int n, ...) {
@@ -599,6 +638,16 @@ char *concatn(int n, ...) {
     return dest;
 }
 
+void freen(int n, ...) {
+    va_list ap;
+    va_start(ap, n);
+    for(int i = 0; i < n; i++) {
+        char *tmp = va_arg(ap, char *);
+        free(tmp);
+    }
+    va_end(ap);
+}
+
 void yyerror(char *msg) {
 	fflush(stdout);
     fprintf(stderr, "Parser error: %s\n", msg);
@@ -606,5 +655,6 @@ void yyerror(char *msg) {
 }
 
 int main() {
+	yydebug = 0;
     return yyparse();
 }

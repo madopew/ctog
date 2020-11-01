@@ -124,30 +124,30 @@ static void comment(void);
 ">="			{ COPYVALUE; return GE_OP; }
 "=="			{ COPYVALUE; return EQ_OP; }
 "!="			{ COPYVALUE; return NE_OP; }
-";"			    { return ';'; }
-"{"		        { return '{'; }
-"}"		        { return '}'; }
-","			    { return ','; }
-":"			    { return ':'; }
-"="			    { return '='; }
-"("			    { return '('; }
-")"			    { return ')'; }
-"["		        { return '['; }
-"]"     		{ return ']'; }
-"."			    { return '.'; }
-"&"			    { return '&'; }
-"!"			    { return '!'; }
-"~"			    { return '~'; }
-"-"			    { return '-'; }
-"+"		    	{ return '+'; }
-"*"		    	{ return '*'; }
-"/"		    	{ return '/'; }
-"%"		    	{ return '%'; }
-"<"		    	{ return '<'; }
-">"		    	{ return '>'; }
-"^"		    	{ return '^'; }
-"|"			    { return '|'; }
-"?"			    { return '?'; }
+";"			    { COPYVALUE; return ';'; }
+"{"		        { COPYVALUE; return '{'; }
+"}"		        { COPYVALUE; return '}'; }
+","			    { COPYVALUE; return ','; }
+":"			    { COPYVALUE; return ':'; }
+"="			    { COPYVALUE; return '='; }
+"("			    { COPYVALUE; return '('; }
+")"			    { COPYVALUE; return ')'; }
+"["		        { COPYVALUE; return '['; }
+"]"     		{ COPYVALUE; return ']'; }
+"."			    { COPYVALUE; return '.'; }
+"&"			    { COPYVALUE; return '&'; }
+"!"			    { COPYVALUE; return '!'; }
+"~"			    { COPYVALUE; return '~'; }
+"-"			    { COPYVALUE; return '-'; }
+"+"		    	{ COPYVALUE; return '+'; }
+"*"		    	{ COPYVALUE; return '*'; }
+"/"		    	{ COPYVALUE; return '/'; }
+"%"		    	{ COPYVALUE; return '%'; }
+"<"		    	{ COPYVALUE; return '<'; }
+">"		    	{ COPYVALUE; return '>'; }
+"^"		    	{ COPYVALUE; return '^'; }
+"|"			    { COPYVALUE; return '|'; }
+"?"			    { COPYVALUE; return '?'; }
 
 {WS}+		    { /* ignore white spaces */  }
 .			    { /* discard bad chars */ }
