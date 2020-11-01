@@ -37,6 +37,7 @@ char *createfunc(char *, char *, char *);
 void addfunccall(char *, char *);
 char *createexp(char *);
 char *createifelse(char *, char *, char *);
+char *createswitch(char *, char *);
 
 char *currentcalls = NULL;
 
@@ -72,6 +73,19 @@ char *currentcalls = NULL;
 #define IFBE "</ifbody>"
 #define ELBS "<elsebody>"
 #define ELBE "</elsebody>"
+#define NELB "<elsebody/>"
+
+#define SWIS "<switch>"
+#define SWIE "</switch>"
+#define LABS "<labelstatement label ="
+
+#define GOTS "<goto>"
+#define GOTE "</gote>"
+#define CONT "<continue/>"
+#define BREA "<break/>"
+#define RETS "<return>"
+#define RETE "</return>"
+#define NRET "<return/>"
 %}
 
 %%
@@ -500,18 +514,18 @@ static_assert_declaration
 	;
 
 statement
-	: labeled_statement
+	: labeled_statement			{ $$ = strdup($1); free($1);}
 	| compound_statement        { $$ = strdup($1); free($1);}
 	| expression_statement      {$$ = createexp($1); free($1);}
-	| selection_statement       
-	| iteration_statement
-	| jump_statement
+	| selection_statement       { $$ = strdup($1); free($1);}
+	| iteration_statement		{$$ = strdup($1); free($1);}
+	| jump_statement			{ $$ = strdup($1); free($1);}
 	;
 
 labeled_statement
-	: IDENTIFIER ':' statement					
-	| CASE constant_expression ':' statement
-	| DEFAULT ':' statement
+	: IDENTIFIER ':' statement					{$$ = concatn(5, LABS, "\"", $1, "\"/>", $2); freen(3, $1, $2, $3);}								
+	| CASE constant_expression ':' statement	{$$ = concatn(5, LABS, "\"", $2, "\"/>", $4); freen(4, $1, $2, $3, $4);}
+	| DEFAULT ':' statement						{$$ = concatn(3, LABS, "\"default\"/>", $3); freen(3, $1, $2, $3);}
 	;
 
 compound_statement  
@@ -537,7 +551,7 @@ expression_statement
 selection_statement
 	: IF '(' expression ')' statement ELSE statement 	{$$ = createifelse($3, $5, $7); freen(7, $1, $2, $3, $4, $5, $6, $7);}
 	| IF '(' expression ')' statement					{$$ = createifelse($3, $5, NULL); freen(5, $1, $2, $3, $4, $5);}
-	| SWITCH '(' expression ')' statement
+	| SWITCH '(' expression ')' statement				{$$ = createswitch($3, $5); freen(5, $1, $2, $3, $4, $5);}
 	;
 
 iteration_statement
@@ -550,11 +564,11 @@ iteration_statement
 	;
 
 jump_statement
-	: GOTO IDENTIFIER ';'
-	| CONTINUE ';'
-	| BREAK ';'
-	| RETURN ';'
-	| RETURN expression ';'
+	: GOTO IDENTIFIER ';'		{$$ = concatn(3, GOTS, $2, GOTE); freen(3, $1, $2, $3);}
+	| CONTINUE ';'				{$$ = strdup(CONT); freen(2, $1, $2);}
+	| BREAK ';'					{$$ = strdup(BREA); freen(2, $1, $2);}
+	| RETURN ';'				{$$ = strdup(NRET); freen(2, $1, $2);}
+	| RETURN expression ';'		{$$ = concatn(3, RETS, $2, RETE); freen(3, $1, $2, $3);}
 	;
 
 program_unit
@@ -583,10 +597,14 @@ declaration_list
 
 %%
 
+char *createswitch(char *condition, char *body) {
+	return concatn(6, SWIS, CONS, condition, CONE, body, SWIE);
+}
+
 char *createifelse(char *condition, char *ifbody, char *elsebody) {
 	if(elsebody)
 		return concatn(11, IFSS, CONS, condition, CONE, IFBS, ifbody, IFBE, ELBS, elsebody, ELBE, IFSE);
-	return concatn(11, IFSS, CONS, condition, CONE, IFBS, ifbody, IFBE, ELBS, "null", ELBE, IFSE);
+	return concatn(9, IFSS, CONS, condition, CONE, IFBS, ifbody, IFBE, NELB, IFSE);
 }
 
 char *createexp(char *exp) {
