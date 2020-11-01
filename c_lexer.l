@@ -27,8 +27,9 @@ WS  [ \t\v\n\f]
 #include <string.h>
 #include "c_parser.tab.h"
 
-extern void yyerror(const char *);
-static void comment(void);
+extern void yyerror(char *);
+void comment(void);
+void preprocessor(void);
 
 #define COPYVALUE yylval = strdup(yytext)
 %}
@@ -38,7 +39,7 @@ static void comment(void);
 
 %%
 
-#.*             {/*skip preprocessor*/}
+"#"            {preprocessor();}
 
 "/*"            {comment();}
 "//".*          {/* consume // comment*/}
@@ -154,20 +155,31 @@ static void comment(void);
 
 %%
 
-static void comment(void)
-{
+void comment(void) {
     int c;
-    while ((c = input()) != 0)
-        if (c == '*')
-        {
+    while ((c = input()) != EOF) {
+        if (c == '*') {
             while ((c = input()) == '*')
                 ;
 
             if (c == '/')
                 return;
 
-            if (c == 0)
+            if (c == EOF)
                 break;
         }
+    }
     yyerror("unterminated comment");
+}
+
+void preprocessor(void) {
+    int c;
+    while((c = input()) != EOF) {
+        if(c == '\\') {
+            c = input();
+            c = input();
+        }
+        if(c == '\n' || c == '\r')
+            return;
+    }
 }
