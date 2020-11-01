@@ -31,6 +31,7 @@ extern int yydebug;
 
 int yylex();
 void yyerror(char *);
+
 char *concatn(int n, ...);
 void freen(int n, ...);
 char *createfunc(char *, char *, char *);
