@@ -103,8 +103,8 @@ static void comment(void);
 ({SP}?\"([^"\\\n]|{ES})*\"{WS}*)+	{ COPYVALUE; return STRING_LITERAL; }
 
 "..."			{ COPYVALUE; return ELLIPSIS; }
-">>="			{ COPYVALUE; return RIGHT_ASSIGN; }
-"<<="			{ COPYVALUE; return LEFT_ASSIGN; }
+">>="			{ yylval = strdup("&gt;&gt;="); return RIGHT_ASSIGN; }
+"<<="			{ yylval = strdup("&lt;&lt;="); return LEFT_ASSIGN; }
 "+="			{ COPYVALUE; return ADD_ASSIGN; }
 "-="			{ COPYVALUE; return SUB_ASSIGN; }
 "*="			{ COPYVALUE; return MUL_ASSIGN; }
@@ -113,15 +113,15 @@ static void comment(void);
 "&="			{ COPYVALUE; return AND_ASSIGN; }
 "^="			{ COPYVALUE; return XOR_ASSIGN; }
 "|="			{ COPYVALUE; return OR_ASSIGN; }
-">>"			{ COPYVALUE; return RIGHT_OP; }
-"<<"			{ COPYVALUE; return LEFT_OP; }
+">>"			{ yylval = strdup("&gt;&gt;"); return RIGHT_OP; }
+"<<"			{ yylval = strdup("&lt;&lt;"); return LEFT_OP; }
 "++"			{ COPYVALUE; return INC_OP; }
 "--"			{ COPYVALUE; return DEC_OP; }
-"->"			{ COPYVALUE; return PTR_OP; }
+"->"			{ yylval = strdup("-&gt;"); return PTR_OP; }
 "&&"			{ COPYVALUE; return AND_OP; }
 "||"			{ COPYVALUE; return OR_OP; }
-"<="			{ COPYVALUE; return LE_OP; }
-">="			{ COPYVALUE; return GE_OP; }
+"<="			{ yylval = strdup("&lt;="); return LE_OP; }
+">="			{ yylval = strdup("&gt;="); return GE_OP; }
 "=="			{ COPYVALUE; return EQ_OP; }
 "!="			{ COPYVALUE; return NE_OP; }
 ";"			    { COPYVALUE; return ';'; }
@@ -143,8 +143,8 @@ static void comment(void);
 "*"		    	{ COPYVALUE; return '*'; }
 "/"		    	{ COPYVALUE; return '/'; }
 "%"		    	{ COPYVALUE; return '%'; }
-"<"		    	{ COPYVALUE; return '<'; }
-">"		    	{ COPYVALUE; return '>'; }
+"<"		    	{ yylval = strdup("&lt;"); return '<'; }
+">"		    	{ yylval = strdup("&gt;"); return '>'; }
 "^"		    	{ COPYVALUE; return '^'; }
 "|"			    { COPYVALUE; return '|'; }
 "?"			    { COPYVALUE; return '?'; }

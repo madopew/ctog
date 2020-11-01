@@ -584,9 +584,9 @@ declaration_list
 %%
 
 char *createifelse(char *condition, char *ifbody, char *elsebody) {
-	if(!elsebody)
+	if(elsebody)
 		return concatn(11, IFSS, CONS, condition, CONE, IFBS, ifbody, IFBE, ELBS, elsebody, ELBE, IFSE);
-	return concatn(8, IFSS, CONS, condition, CONE, IFBS, ifbody, IFBE, IFSE);
+	return concatn(11, IFSS, CONS, condition, CONE, IFBS, ifbody, IFBE, ELBS, "null", ELBE, IFSE);
 }
 
 char *createexp(char *exp) {
