@@ -36,6 +36,7 @@ void preprocessor(void);
 
 %option noyywrap
 %option nounput
+%option yylineno
 
 %%
 

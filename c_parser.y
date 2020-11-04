@@ -26,8 +26,9 @@
 #include <string.h>
 #include <stdarg.h>
 
-#define YYDEBUG 1
-extern int yydebug;
+//#define YYDEBUG 1
+//extern int yydebug;
+extern int yylineno;
 
 int yylex();
 void yyerror(char *);
@@ -99,6 +100,8 @@ char *currentcalls = NULL;
 #define POSC "pre = \"false\">"
 #define CYCE "</cycle>"
 %}
+
+%locations
 
 %%
 
@@ -584,7 +587,7 @@ jump_statement
 	;
 
 program_unit
-	: translation_unit		{$$ = concatn(3, "<program>", $1, "</program>");printf("%s", $$); free($1); free($$);}
+	: translation_unit		{fprintf(stderr, "%s\n", "no error occurred");$$ = concatn(3, "<program>", $1, "</program>");printf("%s", $$); free($1); free($$);}
 	;
 
 translation_unit
@@ -731,13 +734,13 @@ void freen(int n, ...) {
     va_end(ap);
 }
 
-void yyerror(char *msg) {
+void yyerror(char *str) {
 	fflush(stdout);
-    fprintf(stderr, "Parser error: %s\n", msg);
+    fprintf(stderr, "%s on line %d\n", str, yylineno);
     exit(1);
 }
 
 int main() {
-	yydebug = 0;
+	//yydebug = 0;
     return yyparse();
 }
