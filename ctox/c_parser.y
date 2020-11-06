@@ -26,8 +26,6 @@
 #include <string.h>
 #include <stdarg.h>
 
-//#define YYDEBUG 1
-//extern int yydebug;
 extern int yylineno;
 
 int yylex();
@@ -134,7 +132,7 @@ generic_assoc_list
 
 generic_association
 	: type_name ':' assignment_expression			{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
-	| DEFAULT ':' assignment_expression				{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
+	| DEFAULT ':' assignment_expression				{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
 
 postfix_expression
@@ -504,8 +502,8 @@ initializer
 	;
 
 initializer_list
-	: designation initializer						{$$ = concatn(1, $1);free($1);}
-	| initializer									{$$ = concatn(1, $1);free($1);}
+	: designation initializer						{$$ = concatn(2, $1, $2); freen($1, $2);}
+	| initializer									{$$ = concatn(1, $1); free($1);}
 	| initializer_list ',' designation initializer	{$$ = concatn(4, $1, $2, $3, $4); freen(4, $1, $2, $3, $4);}
 	| initializer_list ',' initializer				{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
 	;
@@ -545,7 +543,7 @@ labeled_statement
 
 compound_statement  
 	: '{' '}'                       {$$ = concatn(1, ""); freen(2, $1, $2);}
-	| '{' block_item_list '}'       {$$ = concatn(1, $2);}
+	| '{' block_item_list '}'       {$$ = concatn(1, $2); freen(3, $1, $2, $3);}
 	;
 
 block_item_list
@@ -560,7 +558,7 @@ block_item
 
 expression_statement
 	: ';'				{$$ = concatn(1, ""); free($1);}
-	| expression ';'	{ $$ = concatn(1, $1); free($1);}
+	| expression ';'	{ $$ = concatn(1, $1); freen(2, $1, $2);}
 	;
 
 selection_statement
@@ -587,7 +585,7 @@ jump_statement
 	;
 
 program_unit
-	: translation_unit		{fprintf(stderr, "%s\n", "no error occurred");$$ = concatn(3, "<program>", $1, "</program>");printf("%s", $$); free($1); free($$);}
+	: translation_unit		{fprintf(stderr, "%s\n", "no error occurred");$$ = concatn(3, "<program>", $1, "</program>");printf("%s", $$); freen(2, $1, $$);}
 	;
 
 translation_unit
@@ -711,7 +709,7 @@ char *concatn(int n, ...) {
     char *dest = (char *)calloc(flen + n, sizeof(char));
 	if(!dest) {
 		fflush(stdout);
-    	fprintf(stderr, "%s\n", "an error occured, while trying to allocate memory");
+    	fprintf(stderr, "%s\n", "an error occurred, while trying to allocate memory");
     	exit(1);
 	}
     flen = 0;
@@ -746,8 +744,7 @@ void yyerror(char *str) {
 }
 
 int main() {
-	//yydebug = 0;
-	freopen("test.c", "r", stdin);
-	freopen("output.xml", "w", stdout);
+	freopen("../test.c", "r", stdin);
+	freopen("../output.xml", "w", stdout);
     return yyparse();
 }
