@@ -28,10 +28,11 @@ WS  [ \t\v\n\f]
 #include "c_parser.tab.h"
 
 extern void yyerror(char *);
+extern char *concatn(int n, ...);
 void comment(void);
 void preprocessor(void);
 
-#define COPYVALUE yylval = strdup(yytext)
+#define COPYVALUE yylval = concatn(1, yytext)
 %}
 
 %option noyywrap
@@ -105,25 +106,25 @@ void preprocessor(void);
 ({SP}?\"([^"\\\n]|{ES})*\"{WS}*)+	{ COPYVALUE; return STRING_LITERAL; }
 
 "..."			{ COPYVALUE; return ELLIPSIS; }
-">>="			{ yylval = strdup("&gt;&gt;="); return RIGHT_ASSIGN; }
-"<<="			{ yylval = strdup("&lt;&lt;="); return LEFT_ASSIGN; }
+">>="			{ yylval = concatn(1, "&gt;&gt;="); return RIGHT_ASSIGN; }
+"<<="			{ yylval = concatn(1, "&lt;&lt;="); return LEFT_ASSIGN; }
 "+="			{ COPYVALUE; return ADD_ASSIGN; }
 "-="			{ COPYVALUE; return SUB_ASSIGN; }
 "*="			{ COPYVALUE; return MUL_ASSIGN; }
 "/="			{ COPYVALUE; return DIV_ASSIGN; }
 "%="			{ COPYVALUE; return MOD_ASSIGN; }
-"&="			{ yylval = strdup("&amp;=");; return AND_ASSIGN; }
+"&="			{ yylval = concatn(1, "&amp;=");; return AND_ASSIGN; }
 "^="			{ COPYVALUE; return XOR_ASSIGN; }
 "|="			{ COPYVALUE; return OR_ASSIGN; }
-">>"			{ yylval = strdup("&gt;&gt;"); return RIGHT_OP; }
-"<<"			{ yylval = strdup("&lt;&lt;"); return LEFT_OP; }
+">>"			{ yylval = concatn(1, "&gt;&gt;"); return RIGHT_OP; }
+"<<"			{ yylval = concatn(1, "&lt;&lt;"); return LEFT_OP; }
 "++"			{ COPYVALUE; return INC_OP; }
 "--"			{ COPYVALUE; return DEC_OP; }
-"->"			{ yylval = strdup("-&gt;"); return PTR_OP; }
-"&&"			{ yylval = strdup("&amp;&amp;"); return AND_OP; }
+"->"			{ yylval = concatn(1, "-&gt;"); return PTR_OP; }
+"&&"			{ yylval = concatn(1, "&amp;&amp;"); return AND_OP; }
 "||"			{ COPYVALUE; return OR_OP; }
-"<="			{ yylval = strdup("&lt;="); return LE_OP; }
-">="			{ yylval = strdup("&gt;="); return GE_OP; }
+"<="			{ yylval = concatn(1, "&lt;="); return LE_OP; }
+">="			{ yylval = concatn(1, "&gt;="); return GE_OP; }
 "=="			{ COPYVALUE; return EQ_OP; }
 "!="			{ COPYVALUE; return NE_OP; }
 ";"			    { COPYVALUE; return ';'; }
@@ -137,7 +138,7 @@ void preprocessor(void);
 "["		        { COPYVALUE; return '['; }
 "]"     		{ COPYVALUE; return ']'; }
 "."			    { COPYVALUE; return '.'; }
-"&"			    { yylval = strdup("&amp;"); return '&'; }
+"&"			    { yylval = concatn(1, "&amp;"); return '&'; }
 "!"			    { COPYVALUE; return '!'; }
 "~"			    { COPYVALUE; return '~'; }
 "-"			    { COPYVALUE; return '-'; }
@@ -145,8 +146,8 @@ void preprocessor(void);
 "*"		    	{ COPYVALUE; return '*'; }
 "/"		    	{ COPYVALUE; return '/'; }
 "%"		    	{ COPYVALUE; return '%'; }
-"<"		    	{ yylval = strdup("&lt;"); return '<'; }
-">"		    	{ yylval = strdup("&gt;"); return '>'; }
+"<"		    	{ yylval = concatn(1, "&lt;"); return '<'; }
+">"		    	{ yylval = concatn(1, "&gt;"); return '>'; }
 "^"		    	{ COPYVALUE; return '^'; }
 "|"			    { COPYVALUE; return '|'; }
 "?"			    { COPYVALUE; return '?'; }
