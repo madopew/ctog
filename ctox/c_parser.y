@@ -502,7 +502,7 @@ initializer
 	;
 
 initializer_list
-	: designation initializer						{$$ = concatn(2, $1, $2); freen($1, $2);}
+	: designation initializer						{$$ = concatn(2, $1, $2); freen(2, $1, $2);}
 	| initializer									{$$ = concatn(1, $1); free($1);}
 	| initializer_list ',' designation initializer	{$$ = concatn(4, $1, $2, $3, $4); freen(4, $1, $2, $3, $4);}
 	| initializer_list ',' initializer				{$$ = concatn(3, $1, $2, $3); freen(3, $1, $2, $3);}
