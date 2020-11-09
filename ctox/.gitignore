@@ -3,6 +3,7 @@
 *.xml
 *.c
 *.h
+ctox
 
 # Created by .ignore support plugin (hsz.mobi)
 ### JetBrains template
