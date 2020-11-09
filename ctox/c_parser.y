@@ -744,7 +744,6 @@ void yyerror(char *str) {
 }
 
 int main() {
-	freopen("../test.c", "r", stdin);
-	freopen("../output.xml", "w", stdout);
+	freopen("./ctox.output.xml", "w", stdout);
     return yyparse();
 }
