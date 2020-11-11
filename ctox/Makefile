@@ -20,7 +20,7 @@ OUTPUT := ctox.output.xml
 #presettings----------------------------------------
 
 $(PROGRAM): $(LEXER).c $(PARSER).c $(PARSER).h
-	gcc -o $(PROGRAM) $(LEXER).c $(PARSER).c
+	gcc -o $(PROGRAM) -O3 $(LEXER).c $(PARSER).c
 
 $(LEXER).c: $(LEXER_NAME).l $(PARSER).h
 	flex -o$(LEXER).c $(LEXER_NAME).l
