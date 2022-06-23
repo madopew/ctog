@@ -1,4 +1,4 @@
-package me.madopew.ctog.parser.model
+package me.madopew.ctog.parser.ast.model
 
 internal class LabeledStatementNode: StatementNode() {
     var type: LabeledStatementNodeType? = null

@@ -1,30 +1,30 @@
-package me.madopew.ctog.parser.impl
+package me.madopew.ctog.parser.ast.impl
 
 import me.madopew.ctog.parser.CBaseVisitor
 import me.madopew.ctog.parser.CParser
-import me.madopew.ctog.parser.model.CNode
-import me.madopew.ctog.parser.model.CompoundStatementNode
-import me.madopew.ctog.parser.model.DeclarationStatementNode
-import me.madopew.ctog.parser.model.ExpressionStatementNode
-import me.madopew.ctog.parser.model.FunctionCallStatementNode
-import me.madopew.ctog.parser.model.FunctionNode
-import me.madopew.ctog.parser.model.IfStatementNode
-import me.madopew.ctog.parser.model.IterationStatementNode
-import me.madopew.ctog.parser.model.IterationStatementNodeType
-import me.madopew.ctog.parser.model.JumpStatementNode
-import me.madopew.ctog.parser.model.JumpStatementNodeType
-import me.madopew.ctog.parser.model.LabeledStatementNode
-import me.madopew.ctog.parser.model.LabeledStatementNodeType
-import me.madopew.ctog.parser.model.NoOpStatementNode
-import me.madopew.ctog.parser.model.OtherExpressionStatementNode
-import me.madopew.ctog.parser.model.ProgramNode
-import me.madopew.ctog.parser.model.SelectionStatementNode
-import me.madopew.ctog.parser.model.StatementNode
-import me.madopew.ctog.parser.model.SwitchStatementNode
+import me.madopew.ctog.parser.ast.model.CNode
+import me.madopew.ctog.parser.ast.model.CompoundStatementNode
+import me.madopew.ctog.parser.ast.model.DeclarationStatementNode
+import me.madopew.ctog.parser.ast.model.ExpressionStatementNode
+import me.madopew.ctog.parser.ast.model.FunctionCallStatementNode
+import me.madopew.ctog.parser.ast.model.FunctionNode
+import me.madopew.ctog.parser.ast.model.IfStatementNode
+import me.madopew.ctog.parser.ast.model.IterationStatementNode
+import me.madopew.ctog.parser.ast.model.IterationStatementNodeType
+import me.madopew.ctog.parser.ast.model.JumpStatementNode
+import me.madopew.ctog.parser.ast.model.JumpStatementNodeType
+import me.madopew.ctog.parser.ast.model.LabeledStatementNode
+import me.madopew.ctog.parser.ast.model.LabeledStatementNodeType
+import me.madopew.ctog.parser.ast.model.NoOpStatementNode
+import me.madopew.ctog.parser.ast.model.OtherExpressionStatementNode
+import me.madopew.ctog.parser.ast.model.ProgramNode
+import me.madopew.ctog.parser.ast.model.SelectionStatementNode
+import me.madopew.ctog.parser.ast.model.StatementNode
+import me.madopew.ctog.parser.ast.model.SwitchStatementNode
 import org.antlr.v4.runtime.ParserRuleContext
 import org.antlr.v4.runtime.tree.TerminalNode
 
-internal class CParserVisitor(
+internal class BuildAstVisitor(
     private val tokens: List<String>
 ) : CBaseVisitor<CNode?>() {
     override fun visitCompilationUnit(ctx: CParser.CompilationUnitContext): CNode {
@@ -35,7 +35,7 @@ internal class CParserVisitor(
         }
     }
 
-    override fun visitTranslationUnit(ctx: CParser.TranslationUnitContext): CNode {
+    override fun visitTranslationUnit(ctx: CParser.TranslationUnitContext): ProgramNode {
         return ProgramNode().apply {
             functions = ctx.externalDeclaration()
                 .mapNotNull { visitExternalDeclaration(it) }

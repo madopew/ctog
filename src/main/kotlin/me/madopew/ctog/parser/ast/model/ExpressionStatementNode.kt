@@ -1,4 +1,4 @@
-package me.madopew.ctog.parser.model
+package me.madopew.ctog.parser.ast.model
 
 internal open class ExpressionStatementNode: StatementNode() {
 }
