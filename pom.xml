@@ -84,6 +84,7 @@
                 <artifactId>antlr4-maven-plugin</artifactId>
                 <version>4.10.1</version>
                 <configuration>
+                    <listener>false</listener>
                     <visitor>true</visitor>
                 </configuration>
                 <executions>

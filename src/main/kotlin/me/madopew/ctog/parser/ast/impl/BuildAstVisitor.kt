@@ -166,10 +166,20 @@ internal class BuildAstVisitor(
                 body = ctx.fullText
             }
         } else {
-            visitAssignmentExpression(ctx.assignmentExpression(0)) as ExpressionStatementNode?
+            visitAssignmentExpression(ctx.assignmentExpression(0))
+        }
+    }
+
+    override fun visitAssignmentExpression(ctx: CParser.AssignmentExpressionContext): ExpressionStatementNode {
+        return if (ctx.conditionalExpression() != null) {
+            visitConditionalExpression(ctx.conditionalExpression()) as FunctionCallStatementNode?
                 ?: OtherExpressionStatementNode().apply {
                     body = ctx.fullText
                 }
+        } else {
+            OtherExpressionStatementNode().apply {
+                body = ctx.fullText
+            }
         }
     }
 

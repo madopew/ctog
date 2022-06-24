@@ -12,6 +12,9 @@ import org.antlr.v4.runtime.CommonTokenStream
 //@SpringBootApplication
 //class CtogApplication
 
+// limitations:
+// case fallthrouth doesnt work
+// only top level function call is supported
 fun main() {
     val input = """
         int main() {
@@ -27,6 +30,7 @@ fun main() {
             
             switch (temp) {
                 case 0:
+                    j++;
                     puts("World");
                     break;
                 case 1:
