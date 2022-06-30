@@ -27,7 +27,7 @@ import org.antlr.v4.runtime.tree.TerminalNode
 internal class BuildAstVisitor(
     private val tokens: List<String>
 ) : CBaseVisitor<CNode?>() {
-    override fun visitCompilationUnit(ctx: CParser.CompilationUnitContext): CNode {
+    override fun visitCompilationUnit(ctx: CParser.CompilationUnitContext): ProgramNode {
         return if (ctx.translationUnit() != null) {
             visitTranslationUnit(ctx.translationUnit())
         } else {

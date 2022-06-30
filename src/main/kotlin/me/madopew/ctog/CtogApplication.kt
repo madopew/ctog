@@ -1,6 +1,6 @@
 package me.madopew.ctog
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import me.madopew.ctog.graph.impl.GraphBuilder
 import me.madopew.ctog.parser.CLexer
 import me.madopew.ctog.parser.CParser
 import me.madopew.ctog.parser.api.impl.BuildCodeVisitor
@@ -12,33 +12,21 @@ import org.antlr.v4.runtime.CommonTokenStream
 //@SpringBootApplication
 //class CtogApplication
 
-// limitations:
-// case fallthrouth doesnt work
-// only top level function call is supported
+// current version of the program
+// doesn't support jump statements
+// other than break in switch
 fun main() {
     val input = """
         int main() {
-            int x = init();
-            int temp = 0;
-            while (x > 0) {
-                temp = get(x);
-                if (temp) {
-                    puts("Hello");
-                }
-                x--;
-            }
-            
-            switch (temp) {
+            switch (x) {
                 case 0:
-                    j++;
-                    puts("World");
+                    write(0);
+                    read();
                     break;
-                case 1:
-                    puts("you should not see this");
+                default:
+                    write(1);
                     break;
             }
-            
-            return 0;
         }
     """
 
@@ -48,9 +36,11 @@ fun main() {
     val parser = CParser(CommonTokenStream(lexer))
     val tree = parser.compilationUnit()
     val astVisitor = BuildAstVisitor(tokens)
-    val programNode = astVisitor.visitCompilationUnit(tree) as ProgramNode
+    val programNode = astVisitor.visitCompilationUnit(tree)
     val codeVisitor = BuildCodeVisitor()
     val codeProgram = codeVisitor.visitProgramNode(programNode)
-    println(jacksonObjectMapper().writeValueAsString(codeProgram))
+    val builder = GraphBuilder()
+    val graphs = builder.build(codeProgram)
+    println(graphs)
 //    runApplication<CtogApplication>(*args)
 }
