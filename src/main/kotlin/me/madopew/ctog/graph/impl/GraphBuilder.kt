@@ -2,7 +2,6 @@ package me.madopew.ctog.graph.impl
 
 import me.madopew.ctog.graph.model.Graph
 import me.madopew.ctog.graph.model.GraphConfiguration
-import me.madopew.ctog.graph.model.GraphEdge
 import me.madopew.ctog.graph.model.GraphNode
 import me.madopew.ctog.graph.model.NodeType
 import me.madopew.ctog.parser.api.model.CodeCall
@@ -34,11 +33,16 @@ class GraphBuilder(
     ) {
         var cycleDepth = 1
         val nodes = mutableListOf<GraphNode>()
-        val edges = mutableListOf<GraphEdge>()
+        val edges = mutableMapOf<Long, MutableMap<Long, String?>>()
 
         fun build(function: CodeFunction): Graph {
             visitCodeFunction(function)
-            return Graph(nodes, edges.reversed())
+            return Graph(nodes, edges)
+        }
+
+        fun addEdge(from: GraphNode, to: GraphNode, label: String?) {
+            if (!edges.containsKey(from.id)) edges[from.id] = mutableMapOf()
+            edges[from.id]!![to.id] = label
         }
 
         fun visitCodeFunction(function: CodeFunction) {
@@ -47,7 +51,7 @@ class GraphBuilder(
             nodes.add(startNode)
             nodes.add(endNode)
 
-            edges.add(GraphEdge(null, startNode, visitStatements(function.statements, endNode)))
+            addEdge(startNode, visitStatements(function.statements, endNode), null)
         }
 
         fun visitStatements(statements: List<CodeStatement>, last: GraphNode): GraphNode {
@@ -74,7 +78,7 @@ class GraphBuilder(
             val node = GraphNode(type = type, text = statement.toString())
             nodes.add(node)
 
-            edges.add(GraphEdge(null, node, last))
+            addEdge(node, last, null)
             return node
         }
 
@@ -88,7 +92,7 @@ class GraphBuilder(
             val node = GraphNode(type = type, text = statement.body)
             nodes.add(node)
 
-            edges.add(GraphEdge(null, node, last))
+            addEdge(node, last, null)
             return node
         }
 
@@ -96,8 +100,8 @@ class GraphBuilder(
             val node = GraphNode(type = NodeType.CONDITION, text = statement.condition)
             nodes.add(node)
 
-            edges.add(GraphEdge(config.trueKeyword, node, visitStatements(statement.ifBody, last)))
-            edges.add(GraphEdge(config.falseKeyword, node, visitStatements(statement.elseBody, last)))
+            addEdge(node, visitStatements(statement.ifBody, last), config.trueKeyword)
+            addEdge(node, visitStatements(statement.elseBody, last), config.falseKeyword)
             return node
         }
 
@@ -119,8 +123,8 @@ class GraphBuilder(
             nodes.add(startNode)
             nodes.add(endNode)
 
-            edges.add(GraphEdge(null, startNode, visitStatements(statement.body, endNode)))
-            edges.add(GraphEdge(null, endNode, last))
+            addEdge(startNode, visitStatements(statement.body, endNode), null)
+            addEdge(endNode, last, null)
             cycleDepth--
 
             return startNode
@@ -131,7 +135,7 @@ class GraphBuilder(
             nodes.add(startNode)
 
             statement.cases.forEach { (case, body) ->
-                edges.add(GraphEdge(case, startNode, visitStatements(body, last)))
+                addEdge(startNode, visitStatements(body, last), case)
             }
             return startNode
         }
