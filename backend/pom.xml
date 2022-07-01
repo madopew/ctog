@@ -9,10 +9,10 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>me.madopew</groupId>
-    <artifactId>ctog</artifactId>
+    <artifactId>backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>ctog</name>
-    <description>ctog</description>
+    <name>backend</name>
+    <description>backend</description>
     <properties>
         <java.version>17</java.version>
         <kotlin.version>1.6.21</kotlin.version>
