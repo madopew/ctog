@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("test")
 class MockGraphService : GraphService {
-    override fun build(input: String): List<Graph> {
+    override fun build(input: String?): List<Graph> {
         return listOf(
             Graph(
                 listOf(

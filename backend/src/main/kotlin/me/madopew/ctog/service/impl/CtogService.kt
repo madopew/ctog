@@ -7,19 +7,36 @@ import me.madopew.ctog.parser.CParser
 import me.madopew.ctog.parser.api.impl.BuildCodeVisitor
 import me.madopew.ctog.parser.ast.impl.BuildAstVisitor
 import me.madopew.ctog.service.interfaces.GraphService
+import org.antlr.v4.runtime.BaseErrorListener
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import org.antlr.v4.runtime.RecognitionException
+import org.antlr.v4.runtime.Recognizer
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 @Service
 @Profile("!test")
-class CtogService: GraphService {
-    override fun build(input: String): List<Graph> {
+class CtogService : GraphService {
+    override fun build(input: String?): List<Graph> {
+        if (input == null) return emptyList()
         val lexer = CLexer(CharStreams.fromString(input))
         val tokens = lexer.allTokens.map { it.text }
         lexer.reset()
-        val parser = CParser(CommonTokenStream(lexer))
+        val parser = CParser(CommonTokenStream(lexer)).apply {
+            addErrorListener(object : BaseErrorListener() {
+                override fun syntaxError(
+                    recognizer: Recognizer<*, *>?,
+                    offendingSymbol: Any?,
+                    line: Int,
+                    charPositionInLine: Int,
+                    msg: String?,
+                    e: RecognitionException?
+                ) {
+                    throw IllegalArgumentException("Syntax error at line $line:$charPositionInLine: $msg")
+                }
+            })
+        }
         val tree = parser.compilationUnit()
         val astVisitor = BuildAstVisitor(tokens)
         val programNode = astVisitor.visitCompilationUnit(tree)

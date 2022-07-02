@@ -1,7 +1,7 @@
 package me.madopew.ctog.controller.interfaces
 
-import me.madopew.ctog.graph.model.Graph
+import me.madopew.ctog.dto.GraphDto
 
 interface CtogController {
-    fun getGraph(source: String): List<Graph>
+    fun getGraph(source: String?): List<GraphDto>
 }
