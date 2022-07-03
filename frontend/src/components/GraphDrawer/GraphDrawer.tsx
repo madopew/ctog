@@ -30,10 +30,7 @@ interface DrawableGraphNode {
 export default function GraphDrawer({data}: GraphProps) {
   const canvasWidth = window.innerWidth;
   const canvasHeight = window.innerHeight * 2;
-  const connectionLength = 100;
-  const gVector = Vector2.G.multiply(connectionLength / 20);
-  const connectionConstant = connectionLength / 10;
-  const repulsionConstant = connectionLength / 3;
+  const connectionLength = 50;
   const nodeWidth = 100;
   const nodeHeight = 30;
 
@@ -68,67 +65,36 @@ export default function GraphDrawer({data}: GraphProps) {
     }
   }
 
-  const updateForces = (nodes: DrawableGraphNode[]): DrawableGraphNode[] => {
-    return nodes.map(node => {
-      if (!node.isStart) {
-        const nodeIndex = Number(node.id);
-
-        let resultantVector = gVector;
-
-        connectedTo(nodeIndex)
-          .map(connectedIndex => {
-            return Vector2.fromVectors(node.vector, nodes[connectedIndex].vector);
-          })
-          .forEach(vector => {
-            if (vector.length >= connectionLength) {
-              resultantVector = resultantVector.add(vector.normalize().multiply(connectionConstant));
-            }
-          });
-
-        nodes.filter(otherNode => otherNode.id !== node.id)
-          .filter(otherNode => {
-            if (node.vector.x < otherNode.vector.x + nodeWidth && node.vector.x > otherNode.vector.x - nodeWidth) {
-              if (node.vector.y < otherNode.vector.y + nodeHeight && node.vector.y > otherNode.vector.y - nodeHeight) {
-                return true;
-              }
-            }
-            return false;
-          })
-          .map(otherNode => {
-            return Vector2.fromVectors(otherNode.vector, node.vector);
-          })
-          .forEach(vector => {
-            resultantVector = resultantVector.add(vector.normalize().multiply(repulsionConstant));
-          })
-
-        return {
-          ...node,
-          vector: node.vector.add(resultantVector)
-        }
-      } else {
-        return node;
-      }
-    });
-  }
-
   useEffect(() => {
-    let positionVector = new Vector2(canvasWidth / 2, 30);
-    let prev = data.nodes.map((node, index) => {
-      const isStart = index === getStartIndex();
-      positionVector = positionVector.add(new Vector2(1, nodeHeight + 20));
-      return {
-        id: index.toString(),
-        vector: isStart ? new Vector2(canvasWidth / 2, 30) : positionVector,
-        isDragging: false,
-        isStart: isStart,
-        node: node
-      }
-    });
-    for (let i = 0; i < 1000; i++) {
-      prev = updateForces(prev);
+    let layers: number[][] = [];
+    let indexStack = [getStartIndex()];
+    while (indexStack.length !== 0) {
+      const toAdd: number[] = [];
+      indexStack = indexStack.flatMap(index => {
+        if (toAdd.includes(index)) return [];
+        toAdd.push(index);
+        layers = layers.map(layer => layer.filter(nodeIndex => nodeIndex !== index));
+        if (data.edges[index] === undefined) return [];
+        return Object.keys(data.edges[index]).map(Number);
+      });
+      layers.push(toAdd);
     }
 
-    setDrawNodes(prev);
+    setDrawNodes(layers.flatMap((layer, currentLevel) => {
+      const startX = layer.length === 1
+        ? canvasWidth / 2
+        : canvasWidth / 2 - ((layer.length - 1) * nodeWidth / 2) - nodeWidth / 4;
+      return layer.map((nodeIndex, i) => {
+        const vector = new Vector2(startX + nodeWidth * 1.5 * i, 30 + currentLevel * connectionLength);
+        return {
+          id: String(nodeIndex),
+          vector,
+          isDragging: false,
+          isStart: false,
+          node: data.nodes[nodeIndex]
+        }
+      });
+    }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -169,9 +135,9 @@ export default function GraphDrawer({data}: GraphProps) {
       <Stage width={canvasWidth} height={canvasHeight}>
         <Layer>
           {drawNodes.map(drawNode => {
-            const nodeIndex = Number(drawNode.id);
+            const nodeIndex = data.nodes.indexOf(drawNode.node);
             return connectedTo(nodeIndex)
-              .map(connectedIndex => drawNodes[connectedIndex])
+              .map(connectedIndex => drawNodes.find(node => node.id === String(connectedIndex))!!)
               .map(connectedNode => (
                 <Line
                   key={`${drawNode.id}-${connectedNode.id}`}
@@ -180,6 +146,7 @@ export default function GraphDrawer({data}: GraphProps) {
                     connectedNode.vector.x + nodeWidth / 2, connectedNode.vector.y + nodeHeight / 2
                   ]}
                   stroke={'#000'}
+                  lineCap={'round'}
                 />
               ))
           })}
@@ -195,7 +162,7 @@ export default function GraphDrawer({data}: GraphProps) {
               onDragStart={handleDragStart}
               onDragEnd={handleDragEnd}
               onDragMove={handleDragMove}
-              fill={'#666'}
+              fill={'#fff'}
               stroke={'#000'}
               scale={node.isDragging ? {x: 1.2, y: 1.2} : {x: 1, y: 1}}
             />
@@ -204,10 +171,10 @@ export default function GraphDrawer({data}: GraphProps) {
             <Text
               key={`${drawNode.id}-text`}
               id={drawNode.id}
-              x={drawNode.vector.x}
-              y={drawNode.vector.y}
+              x={drawNode.vector.x + nodeWidth / 2 - 10}
+              y={drawNode.vector.y + nodeHeight / 2 - 10}
               text={drawNode.node.text}
-              fill={'#fff'}
+              fill={'#000'}
             />
           ))}
           <Label/>
