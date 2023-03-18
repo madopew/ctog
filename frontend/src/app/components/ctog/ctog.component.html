@@ -1,0 +1,12 @@
+<div class="container">
+  <div class="code-container">
+    <pre><code [highlight]="code" spellcheck="false"></code></pre>
+    <textarea #codeInput [(ngModel)]="code"
+              (mousedown)="onCodeChange()"
+              (ngModelChange)="onCodeChange()"
+              spellcheck="false" class="hidden"></textarea>
+  </div>
+  <div class="graph-container">
+    <app-graph-viewer [graphDtoList]="graphs"></app-graph-viewer>
+  </div>
+</div>

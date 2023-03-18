@@ -17,8 +17,8 @@ data class GraphConfiguration(
             trueKeyword = "true",
             falseKeyword = "false",
             depthKeyword = "A",
-            inputFunctions = listOf("read"),
-            outputFunctions = listOf("write")
+            inputFunctions = listOf("gets", "scanf", "readline"),
+            outputFunctions = listOf("printf", "puts")
         )
     }
 }

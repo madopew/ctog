@@ -1,0 +1,11 @@
+<div class="container">
+  <div *ngFor="let f of graphDtoList" class="node-container">
+    <div *ngFor="let n of f.nodes"
+         class="node {{n['type']}}"
+         cdkDrag
+         [cdkDragConstrainPosition]="computeDragGrid"
+         [ngStyle]="{'width': width + 'px', 'height': height + 'px'}">
+      <span>{{n['text']}}</span>
+    </div>
+  </div>
+</div>
