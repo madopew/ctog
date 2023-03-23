@@ -10,6 +10,7 @@ import { GraphDto, NodeType } from '../../domain/graph-domain'
 export class CtogComponent implements OnInit {
   @ViewChild('codeInput') codeInput?: ElementRef
   code: string = 'int main() {\n    printf("Hello World!");\n    return 0;\n}'
+  codeCache = this.code
 
   clearTime = 0
 
@@ -50,7 +51,7 @@ export class CtogComponent implements OnInit {
       this.clearTime--
       if (this.clearTime === 0) {
         this.codeInput!.nativeElement.className = 'hidden'
-        this.parseCode()
+        if (this.codeCache !== this.code) this.parseCode()
       }
     }, 1000)
   }
@@ -62,6 +63,7 @@ export class CtogComponent implements OnInit {
 
   parseCode() {
     this.ctogService.parseCode(this.code).subscribe(res => {
+      this.codeCache = this.code
       this.graphs = res
     })
   }

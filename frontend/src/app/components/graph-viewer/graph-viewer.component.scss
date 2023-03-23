@@ -10,6 +10,12 @@
     .node-container {
       width: 100%;
       height: 100%;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      flex-wrap: wrap;
 
       .node {
         cursor: pointer;
@@ -20,6 +26,12 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+
+        pre {
+          text-align: center;
+          white-space: pre-wrap;
+          padding: 0.6em;
+        }
 
         &.START_END {
           background: url("../../../assets/img/start_end.svg");
@@ -53,6 +65,12 @@
           background: url("../../../assets/img/input.svg");
         }
       }
+    }
+
+    .control-buttons {
+      position: absolute;
+      top: 0;
+      right: 0;
     }
   }
 }
