@@ -1,31 +1,7 @@
 package me.madopew.ctog.parser.api.impl
 
-import me.madopew.ctog.parser.api.model.CodeCall
-import me.madopew.ctog.parser.api.model.CodeExpression
-import me.madopew.ctog.parser.api.model.CodeFunction
-import me.madopew.ctog.parser.api.model.CodeIfSelection
-import me.madopew.ctog.parser.api.model.CodeIteration
-import me.madopew.ctog.parser.api.model.CodeProgram
-import me.madopew.ctog.parser.api.model.CodeStatement
-import me.madopew.ctog.parser.api.model.CodeSwitchSelection
-import me.madopew.ctog.parser.api.model.ExpressionType
-import me.madopew.ctog.parser.api.model.IterationType
-import me.madopew.ctog.parser.ast.model.CompoundStatementNode
-import me.madopew.ctog.parser.ast.model.DeclarationStatementNode
-import me.madopew.ctog.parser.ast.model.FunctionCallStatementNode
-import me.madopew.ctog.parser.ast.model.FunctionNode
-import me.madopew.ctog.parser.ast.model.IfStatementNode
-import me.madopew.ctog.parser.ast.model.IterationStatementNode
-import me.madopew.ctog.parser.ast.model.IterationStatementNodeType
-import me.madopew.ctog.parser.ast.model.JumpStatementNode
-import me.madopew.ctog.parser.ast.model.JumpStatementNodeType
-import me.madopew.ctog.parser.ast.model.LabeledStatementNode
-import me.madopew.ctog.parser.ast.model.LabeledStatementNodeType
-import me.madopew.ctog.parser.ast.model.NoOpStatementNode
-import me.madopew.ctog.parser.ast.model.OtherExpressionStatementNode
-import me.madopew.ctog.parser.ast.model.ProgramNode
-import me.madopew.ctog.parser.ast.model.StatementNode
-import me.madopew.ctog.parser.ast.model.SwitchStatementNode
+import me.madopew.ctog.parser.api.model.*
+import me.madopew.ctog.parser.ast.model.*
 
 internal class BuildCodeVisitor {
     fun visitProgramNode(node: ProgramNode): CodeProgram {
@@ -36,7 +12,8 @@ internal class BuildCodeVisitor {
 
     private fun visitFunctionNode(node: FunctionNode): CodeFunction {
         return CodeFunction(
-            definition = node.name!!,
+            name = node.name!!,
+            definition = node.definition!!,
             statements = node.body!!.statements.flatMap { visitStatementNode(it) }
         )
     }
@@ -87,36 +64,15 @@ internal class BuildCodeVisitor {
     private fun visitOtherExpressionStatementNode(node: OtherExpressionStatementNode) =
         CodeExpression(type = ExpressionType.OTHER, body = node.body!!)
 
-    private fun visitSwitchStatementNode(node: SwitchStatementNode): CodeSwitchSelection {
-        val body = node.body!!
-        val switchStatements = if (body is CompoundStatementNode) body.statements else listOf(body)
-        val cases = mutableMapOf<String, List<CodeStatement>>()
-
-        var currentLabel: String? = null
-        val statementList = mutableListOf<CodeStatement>()
-        for (statement in switchStatements) {
-            when (statement) {
-                is LabeledStatementNode -> {
-                    if (statement.type == LabeledStatementNodeType.CASE || statement.type == LabeledStatementNodeType.DEFAULT) {
-                        if (statement.body is LabeledStatementNode) throw IllegalStateException("Case fallthrough is not supported")
-                        currentLabel = statement.label ?: "default"
-                        statementList.addAll(visitStatementNode(statement.body!!))
-                    }
-                }
-                is JumpStatementNode -> {
-                    if (currentLabel != null) {
-                        if (cases.containsKey(currentLabel)) throw IllegalStateException("Ambiguous case label")
-                        cases[currentLabel] = statementList.toList()
-                        currentLabel = null
-                        statementList.clear()
-                    }
-                }
-                else -> statementList.addAll(visitStatementNode(statement))
+    private fun visitSwitchStatementNode(node: SwitchStatementNode) =
+        CodeSwitchSelection(
+            node.condition!!,
+            node.body.associate { labeledStatement ->
+                val label = labeledStatement.label ?: "default"
+                val statements = labeledStatement.body!!.statements.flatMap { visitStatementNode(it) }
+                label to statements
             }
-        }
-
-        return CodeSwitchSelection(node.condition!!, cases)
-    }
+        )
 
     private fun JumpStatementNode.toReadableString(): String {
         return if (label != null) "$type $label" else type.toString()

@@ -9,7 +9,7 @@ import { GraphDto, NodeType } from '../../domain/graph-domain'
 })
 export class CtogComponent implements OnInit {
   @ViewChild('codeInput') codeInput?: ElementRef
-  code: string = 'int main() {\n    printf("Hello World!");\n    return 0;\n}'
+  code: string = 'func main(string[] args) {\n    print(args[0]);\n}'
   codeCache = this.code
 
   clearTime = 0
@@ -19,25 +19,20 @@ export class CtogComponent implements OnInit {
       nodes: [
         {
           type: NodeType.START_END,
-          text: 'int main ( )'
+          text: 'func main ( string [ ] args )'
+        },
+        {
+          type: NodeType.OUTPUT,
+          text: 'print(args [ 0 ])'
         },
         {
           type: NodeType.START_END,
           text: 'end.'
-        },
-        {
-          type: NodeType.ACTION,
-          text: 'return 0'
-        },
-        {
-          type: NodeType.OUTPUT,
-          text: 'printf("Hello World!")'
         }
       ],
       edges: {
-        0: { 3: null },
-        2: { 1: null },
-        3: { 2: null }
+        0: { 1: null },
+        1: { 2: null }
       }
     }
   ]

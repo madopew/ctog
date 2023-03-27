@@ -2,6 +2,7 @@ package me.madopew.ctog.parser.ast.impl
 
 import me.madopew.ctog.parser.CBaseVisitor
 import me.madopew.ctog.parser.CParser
+import me.madopew.ctog.parser.ast.model.*
 import me.madopew.ctog.parser.ast.model.CNode
 import me.madopew.ctog.parser.ast.model.CompoundStatementNode
 import me.madopew.ctog.parser.ast.model.DeclarationStatementNode
@@ -10,11 +11,9 @@ import me.madopew.ctog.parser.ast.model.FunctionCallStatementNode
 import me.madopew.ctog.parser.ast.model.FunctionNode
 import me.madopew.ctog.parser.ast.model.IfStatementNode
 import me.madopew.ctog.parser.ast.model.IterationStatementNode
-import me.madopew.ctog.parser.ast.model.IterationStatementNodeType
 import me.madopew.ctog.parser.ast.model.JumpStatementNode
 import me.madopew.ctog.parser.ast.model.JumpStatementNodeType
 import me.madopew.ctog.parser.ast.model.LabeledStatementNode
-import me.madopew.ctog.parser.ast.model.LabeledStatementNodeType
 import me.madopew.ctog.parser.ast.model.NoOpStatementNode
 import me.madopew.ctog.parser.ast.model.OtherExpressionStatementNode
 import me.madopew.ctog.parser.ast.model.ProgramNode
@@ -37,29 +36,27 @@ internal class BuildAstVisitor(
 
     override fun visitTranslationUnit(ctx: CParser.TranslationUnitContext): ProgramNode {
         return ProgramNode().apply {
-            functions = ctx.externalDeclaration()
-                .mapNotNull { visitExternalDeclaration(it) }
-                .map { it as FunctionNode }
+            functions = ctx.functionDefinition()
+                .map { visitFunctionDefinition(it) }
                 .toMutableList()
         }
     }
 
-    override fun visitExternalDeclaration(ctx: CParser.ExternalDeclarationContext): CNode? {
-        return if (ctx.functionDefinition() != null) {
-            visitFunctionDefinition(ctx.functionDefinition())
-        } else {
-            null
+    override fun visitFunctionDefinition(ctx: CParser.FunctionDefinitionContext): FunctionNode {
+        val functionDefinition = buildString {
+            append(ctx.Function().text)
+            append(' ')
+            append(ctx.declarator().fullText)
+            if (ctx.declarationSpecifiers() != null) {
+                append(ctx.Colon().text)
+                append(' ')
+                append(ctx.declarationSpecifiers().fullText)
+            }
         }
-    }
-
-    override fun visitFunctionDefinition(ctx: CParser.FunctionDefinitionContext): CNode {
-        val functionName = buildList {
-            if (ctx.declarationSpecifiers() != null) add(ctx.declarationSpecifiers().fullText)
-            add(ctx.declarator().fullText)
-        }.joinToString(" ")
 
         return FunctionNode().apply {
-            name = functionName
+            name = ctx.declarator().directDeclarator().directDeclarator().Identifier().text
+            definition = functionDefinition
             body = visitCompoundStatement(ctx.compoundStatement())
         }
     }
@@ -90,17 +87,20 @@ internal class BuildAstVisitor(
 
     override fun visitDeclaration(ctx: CParser.DeclarationContext): DeclarationStatementNode {
         return DeclarationStatementNode().apply {
-            name = ctx.fullText
+            name = buildString {
+                append(ctx.declarationSpecifiers().fullText)
+                if (ctx.initDeclaratorList() != null) {
+                    append(' ')
+                    append(ctx.initDeclaratorList().fullText)
+                }
+            }
         }
     }
 
     override fun visitLabeledStatement(ctx: CParser.LabeledStatementContext): LabeledStatementNode {
         return LabeledStatementNode().apply {
-            body = visitStatement(ctx.statement())
-            if (ctx.Identifier() != null) {
-                type = LabeledStatementNodeType.IDENTIFIER
-                label = ctx.Identifier().text
-            } else if (ctx.Case() != null) {
+            body = visitCompoundStatement(ctx.compoundStatement())
+            if (ctx.Case() != null) {
                 type = LabeledStatementNodeType.CASE
                 label = ctx.constantExpression().fullText
             } else if (ctx.Default() != null) {
@@ -113,13 +113,15 @@ internal class BuildAstVisitor(
         return if (ctx.If() != null) {
             IfStatementNode().apply {
                 condition = ctx.expression().fullText
-                ifBody = visitStatement(ctx.statement(0))
-                if (ctx.statement(1) != null) elseBody = visitStatement(ctx.statement(1))
+                ifBody = visitCompoundStatement(ctx.compoundStatement(0))
+                if (ctx.compoundStatement(1) != null) elseBody = visitCompoundStatement(ctx.compoundStatement(1))
             }
         } else {
             SwitchStatementNode().apply {
                 condition = ctx.expression().fullText
-                body = visitStatement(ctx.statement(0))
+                body = ctx.labeledStatement()
+                    .map { visitLabeledStatement(it) }
+                    .toMutableList()
             }
         }
     }
@@ -132,16 +134,13 @@ internal class BuildAstVisitor(
         return IterationStatementNode().apply {
             type = iterationType
             condition = if (ctx.forCondition() != null) ctx.forCondition().fullText else ctx.expression().fullText
-            body = visitStatement(ctx.statement())
+            body = visitCompoundStatement(ctx.compoundStatement())
         }
     }
 
     override fun visitJumpStatement(ctx: CParser.JumpStatementContext): JumpStatementNode {
         return JumpStatementNode().apply {
-            if (ctx.Goto() != null) {
-                type = JumpStatementNodeType.GOTO
-                label = if (ctx.Identifier() != null) ctx.Identifier().text else ctx.unaryExpression().fullText
-            } else if (ctx.Continue() != null) {
+            if (ctx.Continue() != null) {
                 type = JumpStatementNodeType.CONTINUE
             } else if (ctx.Break() != null) {
                 type = JumpStatementNodeType.BREAK

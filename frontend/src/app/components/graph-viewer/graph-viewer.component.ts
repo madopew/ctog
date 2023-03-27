@@ -23,6 +23,7 @@ export class GraphViewerComponent implements AfterViewInit {
   lines: any[] = []
 
   constructor() {
+    setInterval(() => this.drawLines(), 500)
   }
 
   ngAfterViewInit() {

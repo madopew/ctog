@@ -19,9 +19,9 @@ class GraphBuilder(
     private val config: GraphConfiguration = GraphConfiguration.DEFAULT
 ) {
     fun build(program: CodeProgram): List<Graph> {
-        val functionNames = program.functions.map { it.definition }
+        val functionNames = program.functions.map { it.name }
         val isLocal = { name: String ->
-            functionNames.any { it.contains(name) }
+            functionNames.any { it == name }
         }
 
         return program.functions.map { BuildGraphVisitor(config, isLocal).build(it) }
@@ -49,9 +49,8 @@ class GraphBuilder(
             val startNode = GraphNode(type = NodeType.START_END, text = function.definition)
             val endNode = GraphNode(type = NodeType.START_END, text = config.endKeyword)
             nodes.add(startNode)
-            nodes.add(endNode)
-
             addEdge(startNode, visitStatements(function.statements, endNode), null)
+            nodes.add(endNode)
         }
 
         fun visitStatements(statements: List<CodeStatement>, last: GraphNode): GraphNode {
@@ -121,11 +120,12 @@ class GraphBuilder(
             }
 
             nodes.add(startNode)
-            nodes.add(endNode)
 
             addEdge(startNode, visitStatements(statement.body, endNode), null)
             addEdge(endNode, last, null)
             cycleDepth--
+
+            nodes.add(endNode)
 
             return startNode
         }

@@ -1,5 +1,6 @@
 package me.madopew.ctog.service.impl
 
+import me.madopew.ctog.exception.ParserException
 import me.madopew.ctog.graph.impl.GraphBuilder
 import me.madopew.ctog.graph.model.Graph
 import me.madopew.ctog.parser.CLexer
@@ -33,7 +34,7 @@ class CtogService : GraphService {
                     msg: String?,
                     e: RecognitionException?
                 ) {
-                    throw IllegalArgumentException("Syntax error at line $line:$charPositionInLine: $msg")
+                    throw ParserException("Syntax error at line $line position $charPositionInLine")
                 }
             })
         }

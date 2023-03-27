@@ -17,24 +17,6 @@ public interface CVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitPrimaryExpression(CParser.PrimaryExpressionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CParser#genericSelection}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGenericSelection(CParser.GenericSelectionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#genericAssocList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGenericAssocList(CParser.GenericAssocListContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#genericAssociation}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGenericAssociation(CParser.GenericAssociationContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CParser#postfixExpression}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -167,12 +149,6 @@ public interface CVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDeclarationSpecifiers(CParser.DeclarationSpecifiersContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CParser#declarationSpecifiers2}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDeclarationSpecifiers2(CParser.DeclarationSpecifiers2Context ctx);
-	/**
 	 * Visit a parse tree produced by {@link CParser#declarationSpecifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -191,107 +167,17 @@ public interface CVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitInitDeclarator(CParser.InitDeclaratorContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CParser#storageClassSpecifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStorageClassSpecifier(CParser.StorageClassSpecifierContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CParser#typeSpecifier}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitTypeSpecifier(CParser.TypeSpecifierContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CParser#structOrUnionSpecifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStructOrUnionSpecifier(CParser.StructOrUnionSpecifierContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#structOrUnion}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStructOrUnion(CParser.StructOrUnionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#structDeclarationList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStructDeclarationList(CParser.StructDeclarationListContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#structDeclaration}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStructDeclaration(CParser.StructDeclarationContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CParser#specifierQualifierList}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSpecifierQualifierList(CParser.SpecifierQualifierListContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#structDeclaratorList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStructDeclaratorList(CParser.StructDeclaratorListContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#structDeclarator}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStructDeclarator(CParser.StructDeclaratorContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#enumSpecifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEnumSpecifier(CParser.EnumSpecifierContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#enumeratorList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEnumeratorList(CParser.EnumeratorListContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#enumerator}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEnumerator(CParser.EnumeratorContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#enumerationConstant}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitEnumerationConstant(CParser.EnumerationConstantContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#atomicTypeSpecifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAtomicTypeSpecifier(CParser.AtomicTypeSpecifierContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#typeQualifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTypeQualifier(CParser.TypeQualifierContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#functionSpecifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitFunctionSpecifier(CParser.FunctionSpecifierContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#alignmentSpecifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAlignmentSpecifier(CParser.AlignmentSpecifierContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link CParser#declarator}.
 	 * @param ctx the parse tree
@@ -305,53 +191,11 @@ public interface CVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDirectDeclarator(CParser.DirectDeclaratorContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CParser#vcSpecificModifer}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitVcSpecificModifer(CParser.VcSpecificModiferContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#gccDeclaratorExtension}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGccDeclaratorExtension(CParser.GccDeclaratorExtensionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#gccAttributeSpecifier}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGccAttributeSpecifier(CParser.GccAttributeSpecifierContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#gccAttributeList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGccAttributeList(CParser.GccAttributeListContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#gccAttribute}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitGccAttribute(CParser.GccAttributeContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CParser#nestedParenthesesBlock}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitNestedParenthesesBlock(CParser.NestedParenthesesBlockContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#pointer}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitPointer(CParser.PointerContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#typeQualifierList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTypeQualifierList(CParser.TypeQualifierListContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link CParser#parameterTypeList}.
 	 * @param ctx the parse tree
@@ -395,12 +239,6 @@ public interface CVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDirectAbstractDeclarator(CParser.DirectAbstractDeclaratorContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CParser#typedefName}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTypedefName(CParser.TypedefNameContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CParser#initializer}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -430,12 +268,6 @@ public interface CVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitDesignator(CParser.DesignatorContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#staticAssertDeclaration}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitStaticAssertDeclaration(CParser.StaticAssertDeclarationContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link CParser#statement}.
 	 * @param ctx the parse tree
@@ -521,21 +353,9 @@ public interface CVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitTranslationUnit(CParser.TranslationUnitContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link CParser#externalDeclaration}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitExternalDeclaration(CParser.ExternalDeclarationContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link CParser#functionDefinition}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitFunctionDefinition(CParser.FunctionDefinitionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link CParser#declarationList}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDeclarationList(CParser.DeclarationListContext ctx);
 }
