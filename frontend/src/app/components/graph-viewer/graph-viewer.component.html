@@ -3,18 +3,19 @@
     <button (click)="scaleUp()">+</button>
     <button (click)="scaleDown()">-</button>
   </div>
-  <div class="node-container" (scroll)="drawLines()">
-    <ng-container *ngFor="let f of graphDtoList; let fi = index">
+  <div class="node-container" (scroll)="updateLines()">
+    <ng-container *ngFor="let f of graphDtoList; let fi = index; let l = last">
       <div *ngFor="let n of f.nodes; let ni = index"
            id="node-{{fi}}-{{ni}}"
            class="node {{n['type']}}"
            cdkDrag
            [cdkDragConstrainPosition]="computeDragGrid"
-           (cdkDragMoved)="drawLines()"
+           (cdkDragMoved)="updateLines()"
            [ngStyle]="{'width': width() + 'px', 'height': height() + 'px'}">
         <pre>{{n['text']}}</pre>
       </div>
-      <div class="function-breaker"></div>
+      <ng-container *ngIf="l">
+      </ng-container>
     </ng-container>
   </div>
 </div>

@@ -49,6 +49,12 @@ export class GraphViewerComponent implements AfterViewInit {
     }
   }
 
+  updateLines() {
+    if (this.lines.length > 0) {
+      this.lines.forEach(l => l.position())
+    }
+  }
+
   drawLines() {
     if (this.lines.length > 0) {
       this.lines.forEach(l => l.remove())
