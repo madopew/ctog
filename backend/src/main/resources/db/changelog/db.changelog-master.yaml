@@ -1,0 +1,65 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2023-03-28 19:01
+      author: Bakyt Madi
+      changes:
+        - createTable:
+            tableName: user_info
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: username
+                  type: varchar(50)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password_hash
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_role_id
+                  type: int
+                  defaultValue: "1"
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: user_role
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: varchar(20)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: user_info
+            columnNames: username
+        - addUniqueConstraint:
+            tableName: user_role
+            columnNames: name
+        - addForeignKeyConstraint:
+            constraintName: fk_user_role
+            baseTableName: user_info
+            baseColumnNames: user_role_id
+            referencedTableName: user_role
+            referencedColumnNames: id
+  - changeSet:
+      id: 2023-03-28 19:08
+      author: Bakyt Madi
+      changes:
+        - sql:
+            sql: insert into user_role (id, name) values ('1', 'DEFAULT')
+        - sql:
+            sql: insert into user_role (id, name) values ('2', 'ADMIN')

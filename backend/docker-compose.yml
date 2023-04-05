@@ -1,0 +1,10 @@
+services:
+  psql:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: guest
+      POSTGRES_PASSWORD: guest
+      POSTGRES_DB: ctog_db
+    ports:
+      - 5432:5432

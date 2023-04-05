@@ -1,4 +1,4 @@
-package me.madopew.ctog.dto
+package me.madopew.ctog.dto.graph
 
 data class GraphDto(
     val nodes: List<GraphNodeDto>,
