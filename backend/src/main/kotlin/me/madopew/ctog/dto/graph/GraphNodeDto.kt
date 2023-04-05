@@ -1,4 +1,4 @@
-package me.madopew.ctog.dto
+package me.madopew.ctog.dto.graph
 
 import me.madopew.ctog.graph.model.NodeType
 

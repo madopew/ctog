@@ -1,4 +1,4 @@
-package me.madopew.ctog.service
+package me.madopew.ctog.service.graph
 
 import me.madopew.ctog.exception.ParserException
 import me.madopew.ctog.graph.impl.GraphBuilder

@@ -14,5 +14,5 @@ class UserRole {
     lateinit var name: String
 
     @OneToMany(mappedBy = "userRole")
-    private lateinit var users: Set<User>
+    private lateinit var users: Set<UserInfo>
 }

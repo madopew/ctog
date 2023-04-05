@@ -1,7 +1,5 @@
 package me.madopew.ctog.model
 
-import org.springframework.security.core.GrantedAuthority
-import org.springframework.security.core.userdetails.UserDetails
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -11,7 +9,7 @@ import javax.persistence.JoinColumn
 import javax.persistence.ManyToOne
 
 @Entity
-class User {
+class UserInfo {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id = 0
@@ -23,6 +21,6 @@ class User {
     lateinit var passwordHash: String
 
     @ManyToOne
-    @JoinColumn(name = "user_role_id", nullable = false)
+    @JoinColumn(name = "user_role_id", nullable = false, insertable = false, updatable = false)
     lateinit var userRole: UserRole
 }

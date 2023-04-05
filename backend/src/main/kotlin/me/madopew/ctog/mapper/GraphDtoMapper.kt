@@ -1,7 +1,7 @@
 package me.madopew.ctog.mapper
 
-import me.madopew.ctog.dto.GraphDto
-import me.madopew.ctog.dto.GraphNodeDto
+import me.madopew.ctog.dto.graph.GraphDto
+import me.madopew.ctog.dto.graph.GraphNodeDto
 import me.madopew.ctog.graph.model.Graph
 import me.madopew.ctog.graph.model.GraphNode
 

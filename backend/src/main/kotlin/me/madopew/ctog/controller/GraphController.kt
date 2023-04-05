@@ -1,12 +1,13 @@
 package me.madopew.ctog.controller
 
-import me.madopew.ctog.dto.GraphDto
+import me.madopew.ctog.constant.API_GRAPH
+import me.madopew.ctog.dto.graph.GraphDto
 import me.madopew.ctog.mapper.toDto
-import me.madopew.ctog.service.GraphService
+import me.madopew.ctog.service.graph.GraphService
 import org.springframework.web.bind.annotation.*
 
 @RestController
-@RequestMapping("/api/v1/graph")
+@RequestMapping(API_GRAPH)
 class GraphController(
     private val graphService: GraphService
 ) {

@@ -4,7 +4,7 @@ databaseChangeLog:
       author: Bakyt Madi
       changes:
         - createTable:
-            tableName: user
+            tableName: user_info
             columns:
               - column:
                   name: id
@@ -26,6 +26,7 @@ databaseChangeLog:
               - column:
                   name: user_role_id
                   type: int
+                  defaultValue: "1"
                   constraints:
                     nullable: false
         - createTable:
@@ -34,7 +35,6 @@ databaseChangeLog:
               - column:
                   name: id
                   type: int
-                  autoIncrement: true
                   constraints:
                     nullable: false
                     primaryKey: true
@@ -44,14 +44,14 @@ databaseChangeLog:
                   constraints:
                     nullable: false
         - addUniqueConstraint:
-            tableName: user
+            tableName: user_info
             columnNames: username
         - addUniqueConstraint:
             tableName: user_role
             columnNames: name
         - addForeignKeyConstraint:
             constraintName: fk_user_role
-            baseTableName: user
+            baseTableName: user_info
             baseColumnNames: user_role_id
             referencedTableName: user_role
             referencedColumnNames: id
@@ -60,8 +60,6 @@ databaseChangeLog:
       author: Bakyt Madi
       changes:
         - sql:
-            sql: insert into user_role (name) values ('DEFAULT')
+            sql: insert into user_role (id, name) values ('1', 'DEFAULT')
         - sql:
-            sql: insert into user_role (name) values ('PRO')
-        - sql:
-            sql: insert into user_role (name) values ('ADMIN')
+            sql: insert into user_role (id, name) values ('2', 'ADMIN')
