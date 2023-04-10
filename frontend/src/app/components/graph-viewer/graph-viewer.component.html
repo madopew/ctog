@@ -1,21 +1,91 @@
 <div class="container">
-  <div class="control-buttons">
-    <button (click)="scaleUp()">+</button>
-    <button (click)="scaleDown()">-</button>
-  </div>
-  <div class="node-container" (scroll)="updateLines()">
-    <ng-container *ngFor="let f of graphDtoList; let fi = index; let l = last">
-      <div *ngFor="let n of f.nodes; let ni = index"
-           id="node-{{fi}}-{{ni}}"
-           class="node {{n['type']}}"
-           cdkDrag
-           [cdkDragConstrainPosition]="computeDragGrid"
-           (cdkDragMoved)="updateLines()"
-           [ngStyle]="{'width': width() + 'px', 'height': height() + 'px'}">
-        <pre>{{n['text']}}</pre>
-      </div>
-      <ng-container *ngIf="l">
-      </ng-container>
-    </ng-container>
-  </div>
+  <ngx-graph [nodes]="nodes"
+             [links]="links"
+             [layout]="layout">
+    <ng-template #defsTemplate>
+      <svg>
+        <marker id="arrow" viewBox="0 -5 10 10" refX="8" refY="0" markerWidth="4" markerHeight="4" orient="auto">
+          <path d="M0,-5L10,0L0,5"/>
+        </marker>
+      </svg>
+    </ng-template>
+    <ng-template #nodeTemplate let-node>
+      <svg viewBox="0 0 260 160" width="130" height="80">
+        <style>
+          .text-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+
+          }
+
+          .text-container .inner-container {
+            width: 80%;
+            height: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .text-container .inner-container pre {
+            white-space: pre-wrap;
+            font-family: Arial, sans-serif;
+            font-size: 20px;
+            text-align: center;
+          }
+
+          .link-text {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            text-anchor: middle;
+            dominant-baseline: middle;
+          }
+        </style>
+        <path *ngIf="node['data']['type'] === 'START_END'" d="M80,155 a40,40 0 0 1 0 -150 h100 a40,40 0 0 1 0 150 z"
+              fill="white" stroke="black" stroke-width="5"/>
+        <path *ngIf="node['data']['type'] === 'ACTION'" d="M5,5 h250 v150 h-250 v-150 z"
+              fill="white" stroke="black" stroke-width="5"/>
+        <path *ngIf="node['data']['type'] === 'CONDITION'" d="M130,5 L255,80 L130,155 L5,80 z"
+              fill="white" stroke="black" stroke-width="5"/>
+        <path *ngIf="node['data']['type'] === 'CYCLE_END'" d="M5,5 h250 v105 l-45,45 h-160 l-45,-45 z"
+              fill="white" stroke="black" stroke-width="5"/>
+        <path *ngIf="node['data']['type'] === 'CYCLE_START'" d="M5,50 l45,-45 h160 l45,45 v105 h-250 z"
+              fill="white" stroke="black" stroke-width="5"/>
+        <path *ngIf="node['data']['type'] === 'INPUT'" d="M5,155 l35,-150 h215 l-35,150 z"
+              fill="white" stroke="black" stroke-width="5"/>
+        <path *ngIf="node['data']['type'] === 'OUTPUT'" d="M5,155 l35,-150 h215 l-35,150 z"
+              fill="white" stroke="black" stroke-width="5"/>
+        <path *ngIf="node['data']['type'] === 'LOCAL_ACTION'" d="M5,5 h250 v150 h-250 v-150 z"
+              fill="white" stroke="black" stroke-width="5"/>
+        <path *ngIf="node['data']['type'] === 'LOCAL_ACTION'" d="M25,5 v150 m210,0 v-150"
+              fill="none" stroke="black" stroke-width="5"/>
+        <foreignObject height="160" width="260">
+          <div class="text-container">
+            <div class="inner-container">
+              <pre>{{node['label']}}</pre>
+            </div>
+          </div>
+        </foreignObject>
+      </svg>
+    </ng-template>
+    <ng-template #linkTemplate let-link>
+      <svg>
+        <path [attr.d]="link['oldLine']"
+              marker-end="url(#arrow)"
+              stroke="black"
+              fill="none"
+              stroke-width="2"/>
+        <text class="link-text" x="0" y="0"
+              [attr.transform]="textTransform(link)">
+          <!--              [attr.x]="link['midPoint']['x']"-->
+          <!--              [attr.y]="link['midPoint']['y']" >-->
+          {{link['label']}}
+        </text>
+      </svg>
+    </ng-template>
+  </ngx-graph>
 </div>

@@ -1,4 +1,4 @@
-package me.madopew.ctog.graph.model
+package me.madopew.ctog.model.graph
 
 enum class NodeType {
     START_END,

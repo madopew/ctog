@@ -1,0 +1,64 @@
+@import "../../../custom-theme";
+
+:host {
+  .container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+
+    .toolbar-container {
+      position: absolute;
+      z-index: 100;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+
+      .toolbar {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        background: white;
+        box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+        margin-bottom: 1.5em;
+        border-radius: 1em;
+        padding: 0.4em;
+
+        .t-icon {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          box-sizing: border-box;
+          padding: 1em;
+          border-radius: 0.9em;
+
+          &:hover {
+            background: map-get($ctog-primary, 100) !important;
+          }
+
+          &.selected {
+            background: map-get($ctog-primary, 200);
+          }
+
+          mat-icon {
+            transform: scale(1.2);
+          }
+
+          &.close {
+            background: map-get($ctog-warn, 200);
+
+            &:hover {
+              background: map-get($ctog-warn, 100) !important;
+            }
+          }
+        }
+      }
+    }
+  }
+}

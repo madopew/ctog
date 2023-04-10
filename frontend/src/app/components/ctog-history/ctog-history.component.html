@@ -1,0 +1,8 @@
+<div class="container">
+  <mat-paginator (page)="onPage($event)"
+                 [showFirstLastButtons]="true"
+                 [length]="totalElements"
+                 [pageSize]="10"
+                 [hidePageSize]="true"
+  ></mat-paginator>
+</div>

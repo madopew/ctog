@@ -1,7 +1,7 @@
 package me.madopew.ctog.service.model
 
 import me.madopew.ctog.exception.NotFoundException
-import me.madopew.ctog.model.UserInfo
+import me.madopew.ctog.model.user.UserInfo
 import me.madopew.ctog.repository.UserRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional

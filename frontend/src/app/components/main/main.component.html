@@ -1,0 +1,26 @@
+<div class="container">
+  <app-ctog *ngIf="selectedTab === 'code'"></app-ctog>
+  <app-ctog-history *ngIf="selectedTab === 'history'"></app-ctog-history>
+  <div class="toolbar-container">
+    <div class="toolbar">
+      <div class="t-icon"
+           matTooltip="Code to graph"
+           [ngClass]="{selected: selectedTab === 'code'}"
+           (click)="selectCode()">
+        <mat-icon fontIcon="code"></mat-icon>
+      </div>
+      <div class="t-icon"
+           matTooltip="History"
+           [ngClass]="{selected: selectedTab === 'history'}"
+           (click)="selectHistory()">
+        <mat-icon fontIcon="history"></mat-icon>
+      </div>
+      <div class="t-icon" *ngIf="isAdmin()">
+        <mat-icon fontIcon="group"></mat-icon>
+      </div>
+      <div class="t-icon close" matTooltip="Logout" (click)="selectLogout()">
+        <mat-icon fontIcon="logout"></mat-icon>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,9 +1,9 @@
 package me.madopew.ctog.graph.impl
 
-import me.madopew.ctog.graph.model.Graph
-import me.madopew.ctog.graph.model.GraphConfiguration
-import me.madopew.ctog.graph.model.GraphNode
-import me.madopew.ctog.graph.model.NodeType
+import me.madopew.ctog.model.graph.Graph
+import me.madopew.ctog.model.graph.GraphConfiguration
+import me.madopew.ctog.model.graph.GraphNode
+import me.madopew.ctog.model.graph.NodeType
 import me.madopew.ctog.parser.api.model.CodeCall
 import me.madopew.ctog.parser.api.model.CodeExpression
 import me.madopew.ctog.parser.api.model.CodeFunction
@@ -28,12 +28,12 @@ class GraphBuilder(
     }
 
     private class BuildGraphVisitor(
-        val config: GraphConfiguration,
-        val isLocal: (String) -> Boolean
+            val config: GraphConfiguration,
+            val isLocal: (String) -> Boolean
     ) {
         var cycleDepth = 1
         val nodes = mutableListOf<GraphNode>()
-        val edges = mutableMapOf<Long, MutableMap<Long, String?>>()
+        val edges = mutableMapOf<Int, MutableMap<Int, String?>>()
 
         fun build(function: CodeFunction): Graph {
             visitCodeFunction(function)

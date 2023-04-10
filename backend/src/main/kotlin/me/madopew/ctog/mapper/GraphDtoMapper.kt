@@ -1,9 +1,13 @@
 package me.madopew.ctog.mapper
 
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import me.madopew.ctog.dto.graph.GraphDto
 import me.madopew.ctog.dto.graph.GraphNodeDto
-import me.madopew.ctog.graph.model.Graph
-import me.madopew.ctog.graph.model.GraphNode
+import me.madopew.ctog.dto.graph.GraphRequestDto
+import me.madopew.ctog.model.graph.Graph
+import me.madopew.ctog.model.graph.GraphNode
+import me.madopew.ctog.model.graph.GraphRequest
 
 fun Graph.toDto(): GraphDto {
     val nodes = this.nodes.map { it.toDto() }
@@ -22,4 +26,10 @@ fun Graph.toDto(): GraphDto {
 }
 
 fun GraphNode.toDto(): GraphNodeDto =
-    GraphNodeDto(this.type, this.text)
+        GraphNodeDto(this.type, this.text)
+
+fun GraphRequest.toDto() = GraphRequestDto(
+        ts,
+        input,
+        jacksonObjectMapper().readValue(output, object : TypeReference<List<Graph>>() {}).map { it.toDto() }
+)

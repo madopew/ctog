@@ -1,4 +1,4 @@
-package me.madopew.ctog.model
+package me.madopew.ctog.model.user
 
 import javax.persistence.Column
 import javax.persistence.Entity

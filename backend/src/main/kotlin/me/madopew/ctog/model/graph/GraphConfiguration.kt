@@ -1,4 +1,4 @@
-package me.madopew.ctog.graph.model
+package me.madopew.ctog.model.graph
 
 data class GraphConfiguration(
     val endKeyword: String,

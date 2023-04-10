@@ -63,3 +63,43 @@ databaseChangeLog:
             sql: insert into user_role (id, name) values ('1', 'DEFAULT')
         - sql:
             sql: insert into user_role (id, name) values ('2', 'ADMIN')
+  - changeSet:
+      id: 2023-04-09 19:33
+      author: Bakyt Madi
+      changes:
+        - createTable:
+            tableName: graph_request
+            columns:
+              - column:
+                  name: id
+                  type: int
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: input
+                  type: varchar(2048)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: output
+                  type: varchar(2048)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: ts
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_info_id
+                  type: int
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            constraintName: fk_graph_user
+            baseTableName: graph_request
+            baseColumnNames: user_info_id
+            referencedTableName: user_info
+            referencedColumnNames: id

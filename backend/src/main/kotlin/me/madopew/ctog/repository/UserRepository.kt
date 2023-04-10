@@ -1,6 +1,6 @@
 package me.madopew.ctog.repository
 
-import me.madopew.ctog.model.UserInfo
+import me.madopew.ctog.model.user.UserInfo
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
 

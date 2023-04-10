@@ -2,11 +2,76 @@
   <div class="code-container">
     <pre><code [highlight]="code" spellcheck="false"></code></pre>
     <textarea #codeInput [(ngModel)]="code"
-              (mousedown)="onCodeChange()"
-              (ngModelChange)="onCodeChange()"
               spellcheck="false" class="hidden"></textarea>
   </div>
+  <div class="toolbar-container">
+    <div class="toolbar">
+      <div class="t-icon"
+           matTooltipPosition="right"
+           matTooltip="if"
+           (click)="insertStatement(IF_STATEMENT)">
+        <div class="t-text">
+          <span>if</span>
+        </div>
+      </div>
+      <div class="t-icon"
+           matTooltipPosition="right"
+           matTooltip="if else"
+           (click)="insertStatement(IF_ELSE_STATEMENT)">
+        <div class="t-text">
+          <span>if</span>
+          <span>els</span>
+        </div>
+      </div>
+      <div class="t-icon"
+           matTooltipPosition="right"
+           matTooltip="switch"
+           (click)="insertStatement(SWITCH_STATEMENT)">
+        <div class="t-text">
+          <span>swi</span>
+          <span>tch</span>
+        </div>
+      </div>
+      <div class="t-icon"
+           matTooltipPosition="right"
+           matTooltip="for"
+           (click)="insertStatement(FOR_STATEMENT)">
+        <div class="t-text">
+          <span>for</span>
+        </div>
+      </div>
+      <div class="t-icon"
+           matTooltipPosition="right"
+           matTooltip="while"
+           (click)="insertStatement(WHILE_STATEMENT)">
+        <div class="t-text">
+          <span>whl</span>
+        </div>
+      </div>
+      <div class="t-icon"
+           matTooltipPosition="right"
+           matTooltip="do while"
+           (click)="insertStatement(DO_WHILE_STATEMENT)">
+        <div class="t-text">
+          <span>do</span>
+          <span>whl</span>
+        </div>
+      </div>
+      <div class="t-icon build"
+           matTooltipPosition="right"
+           matTooltip="Build"
+           (click)="parseCode()">
+        <mat-icon fontIcon="play_arrow"></mat-icon>
+      </div>
+      <div class="t-icon"
+           matTooltipPosition="right"
+           matTooltip="Export"
+           (click)="export()">
+        <mat-icon fontIcon="ios_share"></mat-icon>
+      </div>
+    </div>
+  </div>
   <div class="graph-container">
-    <app-graph-viewer [graphDtoList]="graphs"></app-graph-viewer>
+    <app-graph-viewer #graphViewer [graphDtoList]="graphs"></app-graph-viewer>
   </div>
 </div>

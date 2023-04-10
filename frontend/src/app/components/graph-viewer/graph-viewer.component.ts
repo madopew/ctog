@@ -1,89 +1,65 @@
-import { AfterViewChecked, AfterViewInit, Component, Input, OnChanges, SimpleChanges } from '@angular/core'
-import { GraphDto } from '../../domain/graph-domain'
-import { DragRef, Point } from '@angular/cdk/drag-drop'
+import {Component, Input, OnChanges, SimpleChanges} from '@angular/core'
+import {GraphDto} from '../../domain/graph-domain'
+import {DagreLayout, Edge, Node, Orientation} from "@swimlane/ngx-graph";
+import * as htmlToImage from 'html-to-image';
 
 @Component({
   selector: 'app-graph-viewer',
   templateUrl: './graph-viewer.component.html',
   styleUrls: ['./graph-viewer.component.scss']
 })
-export class GraphViewerComponent implements AfterViewInit {
+export class GraphViewerComponent implements OnChanges {
   @Input('graphDtoList') graphDtoList: GraphDto[] = []
 
-  sizeMultiplier = 7
-
-  width() {
-    return 26 * this.sizeMultiplier
-  }
-
-  height() {
-    return 16 * this.sizeMultiplier
-  }
-
-  lines: any[] = []
+  nodes: Node[] = []
+  links: Edge[] = []
+  layout = new DagreLayout()
 
   constructor() {
-    setInterval(() => this.drawLines(), 500)
+    this.layout.defaultSettings.orientation = Orientation.TOP_TO_BOTTOM
+    this.layout.defaultSettings.rankPadding = 50
   }
 
-  ngAfterViewInit() {
-    this.drawLines()
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['graphDtoList']) this.drawGraph()
   }
 
-  scaleUp() {
-    this.sizeMultiplier++
-  }
+  drawGraph() {
+    this.nodes = []
+    this.links = []
 
-  scaleDown() {
-    this.sizeMultiplier--
-  }
-
-  computeDragGrid(pos: Point, dragRef: DragRef) {
-    const pickup = dragRef['_pickupPositionInElement']
-    const dw = pickup['x']
-    const dh = pickup['y']
-    const grid = 7
-    return {
-      x: Math.floor((pos.x - dw) / grid) * grid,
-      y: Math.floor((pos.y - dh) / grid) * grid
-    }
-  }
-
-  updateLines() {
-    if (this.lines.length > 0) {
-      this.lines.forEach(l => l.position())
-    }
-  }
-
-  drawLines() {
-    if (this.lines.length > 0) {
-      this.lines.forEach(l => l.remove())
-      this.lines = []
-    }
-
-    for (let fi = 0; fi < this.graphDtoList.length; fi++) {
-      Object.keys(this.graphDtoList[fi].edges).forEach(nisString => {
-        const nis = Number(nisString)
-        Object.keys(this.graphDtoList[fi].edges[nis]).forEach(nieString => {
-          const nie = Number(nieString)
-          const start = document.getElementById(`node-${fi}-${nis}`) as Element
-          const end = document.getElementById(`node-${fi}-${nie}`) as Element
-          const lineText = this.graphDtoList[fi].edges[nis][nie] ?? ''
-          // @ts-ignore
-          const line = new LeaderLine({
-            start,
-            end,
-            endSocket: 'top',
-            color: 'black',
-            path: 'fluid',
-            size: '2',
-            endPlug: 'arrow3',
-            // @ts-ignore
-            middleLabel: lineText
-          })
-          this.lines.push(line)
+    this.graphDtoList.forEach((func, fi) => {
+      func.nodes.forEach((node, ni) => {
+        this.nodes.push({
+          id: `node${fi}${ni}`,
+          label: node.text,
+          data: node
         })
       })
-    }
+
+      Object.keys(func.edges).forEach(inis => {
+        const ini = Number(inis)
+        Object.keys(func.edges[ini]).forEach(onis => {
+          const oni = Number(onis)
+          this.links.push({
+            id: `edge${fi}${inis}${onis}`,
+            source: `node${fi}${inis}`,
+            target: `node${fi}${onis}`,
+            label: func.edges[ini][oni] ?? ''
+          })
+        })
+      })
+    })
+  }
+
+  export(): Promise<string> {
+    return htmlToImage.toPng(document.getElementsByClassName("ngx-charts")[0] as any, {
+      skipFonts: true
+    })
+  }
+
+  textTransform(link: any): string {
+    if (link.midPoint) return `translate(${link.midPoint.x}, ${link.midPoint.y})`
+    return "translate(0, 0)"
   }
 }

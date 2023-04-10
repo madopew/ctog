@@ -1,12 +1,17 @@
+@import "../../../custom-theme";
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
 :host {
   ::ng-deep {
     .code-container {
       code, textarea {
-        padding: 0.5em;
+        padding: 1em;
         font-family: 'Source Code Pro', monospace;
         font-size: 1.1rem;
         line-height: 1.3rem;
         overflow: hidden;
+        border-radius: 2em;
+        white-space: pre-wrap;
       }
     }
   }
@@ -14,19 +19,22 @@
   .container {
     width: 100%;
     height: 100%;
+    padding: 2em;
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
 
     .code-container {
-      flex-shrink: 1;
       min-width: 500px;
       height: 100%;
       position: relative;
+      border-radius: 2em;
+      box-shadow: 0 0 8px 8px rgba(0, 0, 0, 0.1);
 
       pre, textarea {
+        border-radius: 2em;
         position: absolute;
+        margin: 0;
         top: 0;
         left: 0;
         right: 0;
@@ -42,16 +50,80 @@
         z-index: 2;
         outline: none;
         border: none;
-        border-radius: 0;
+        border-radius: 2em;
+        opacity: 0;
 
-        &.hidden {
-          opacity: 0;
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+
+    .toolbar-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      .toolbar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        border-radius: 0.5em;
+        box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1);
+        margin: 0 2em 0 2em;
+        padding: 0.3em;
+
+        .t-icon {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          padding: 0.3em;
+          border-radius: 0.3em;
+
+          &.build {
+            background: #a5d6a7;
+
+            &:hover {
+              background: #c8e6c9 !important;
+            }
+          }
+
+          .t-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid black;
+            border-radius: 0.3em;
+            width: 2em;
+            height: 2em;
+
+            &:hover {
+              background: map-get($ctog-primary, 100);
+            }
+
+            span {
+              font-size: 0.9rem;
+              font-family: 'VT323', monospace;
+              line-height: 0.7rem;
+            }
+          }
+
+          mat-icon {
+            transform: scale(1.1);
+          }
         }
       }
     }
 
     .graph-container {
-      flex: 3 1;
+      flex-grow: 1;
       height: 100%;
     }
   }

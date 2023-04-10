@@ -18,3 +18,9 @@ export enum NodeType {
   INPUT = 'INPUT',
   OUTPUT = 'OUTPUT'
 }
+
+export interface GraphRequest {
+  ts: string,
+  input: string,
+  output: GraphDto[]
+}

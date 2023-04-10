@@ -1,62 +1,64 @@
 @import '~highlight.js/styles/vs.css';
+@import "custom-theme";
 @import url('https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&display=swap');
 
-:root {
-  --mt3-background: #FFFCF3;
+html, body {
+  height: 100%;
 }
 
-/* http://meyerweb.com/eric/tools/css/reset/
-   v2.0 | 20110126
-   License: none (public domain)
-*/
-
-html {
-  overflow: hidden;
-}
-
-html, body, div, span, applet, object, iframe,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-a, abbr, acronym, address, big, cite, code,
-del, dfn, em, img, ins, kbd, q, s, samp,
-small, strike, strong, sub, sup, tt, var,
-b, u, i, center,
-dl, dt, dd, ol, ul, li,
-fieldset, form, label, legend,
-table, caption, tbody, tfoot, thead, tr, th, td,
-article, aside, canvas, details, embed,
-figure, figcaption, footer, header, hgroup,
-menu, nav, output, ruby, section, summary,
-time, mark, audio, video {
-  margin: 0;
-  padding: 0;
-  border: 0;
-  font-size: 100%;
-  font: inherit;
-  vertical-align: baseline;
-}
-/* HTML5 display-role reset for older browsers */
-article, aside, details, figcaption, figure,
-footer, header, hgroup, menu, nav, section {
-  display: block;
-}
 body {
-  line-height: 1;
-}
-ol, ul {
-  list-style: none;
-}
-blockquote, q {
-  quotes: none;
-}
-blockquote:before, blockquote:after,
-q:before, q:after {
-  content: '';
-  content: none;
-}
-table {
-  border-collapse: collapse;
-  border-spacing: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+input.text-input {
+  width: 100%;
+  border: 1px solid #f3f3f3;
+  background: #f3f3f3;
+  font-size: 1rem;
+  padding: 8px 16px;
+  outline: none;
+  border-radius: 8px;
+  transition: box-shadow 0.1s ease-in-out;
+  margin-bottom: 1em;
+
+  &:hover {
+    background: white;
+    box-shadow: 0 0 0 6px #f6f6f6;
+  }
+
+  &:focus {
+    background: white;
+    box-shadow: 0 0 0 5px map-get($ctog-primary, 100);
+    border: 1px solid map-get($ctog-primary, 300);
+  }
+}
+
+button.primary {
+  border: none;
+  color: white;
+  font-weight: 500;
+  font-size: 1rem;
+  background: map-get($ctog-primary, 500);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background: map-get($ctog-primary, 400);
+  }
+}
+
+button.outlined {
+  border: 1px solid map-get($ctog-primary, 500);
+  background: transparent;
+  color: map-get($ctog-primary, 500);
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(map-get($ctog-primary, 100), 0.1);
+  }
+}

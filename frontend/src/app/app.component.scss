@@ -1,7 +1,10 @@
+@import "../custom-theme";
+
 :host {
   .container {
     width: 100vw;
     height: 100vh;
-    background: var(--mt3-background);
+    background: map-get($ctog-primary, 500) url('/assets/img/background.png');
+    background-size: cover;
   }
 }
