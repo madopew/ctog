@@ -9,13 +9,17 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import javax.persistence.EntityManager
 
 @Service
+@Transactional
 class AuthService(
     private val userService: UserService,
     private val jwtService: JwtService,
     private val passwordEncoder: PasswordEncoder,
-    private val authenticationManager: AuthenticationManager
+    private val authenticationManager: AuthenticationManager,
+    private val entityManager: EntityManager
 ) {
     fun login(request: AuthDto): LoginResponseDto {
         val user = userService.getByUsername(request.username) ?: return register(request)
@@ -34,6 +38,8 @@ class AuthService(
                 passwordHash = passwordEncoder.encode(request.password)
             }
         )
+
+        entityManager.refresh(user)
 
         return LoginResponseDto(jwtService.generateToken(UserDetailsDto(user)))
     }

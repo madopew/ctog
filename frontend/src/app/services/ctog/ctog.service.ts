@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core'
-import { HttpClient } from '@angular/common/http'
-import {GraphDto, GraphRequest} from '../../domain/graph-domain'
+import { HttpClient, HttpParams } from '@angular/common/http'
+import { GraphDto, GraphRequest } from '../../domain/graph-domain'
 import { Observable } from 'rxjs'
 import { AuthService } from '../auth/auth.service'
-import {Page} from "../../domain/page-domain";
+import { Page } from '../../domain/page-domain'
 
 @Injectable({
   providedIn: 'root'
@@ -21,8 +21,12 @@ export class CtogService {
   }
 
   filter(page: number | null, size: number | null): Observable<Page<GraphRequest>> {
-    return this.http.post<Page<GraphRequest>>('graph/filter', {page, size}, {
-      headers: this.authService.getHeaders()
+    return this.http.post<Page<GraphRequest>>('graph/filter', {}, {
+      headers: this.authService.getHeaders(),
+      params: {
+        page: String(page),
+        size: String(size)
+      }
     })
   }
 }

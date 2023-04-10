@@ -1,6 +1,7 @@
-import {AfterViewInit, Component} from '@angular/core';
-import {Router} from "@angular/router";
-import {AuthService} from "../../services/auth/auth.service";
+import { AfterViewInit, Component } from '@angular/core'
+import { Router } from '@angular/router'
+import { AuthService } from '../../services/auth/auth.service'
+import { GraphDto } from '../../domain/graph-domain'
 
 @Component({
   selector: 'app-main',
@@ -9,6 +10,9 @@ import {AuthService} from "../../services/auth/auth.service";
 })
 export class MainComponent implements AfterViewInit {
   selectedTab = 'code'
+
+  code: string = 'func main(string[] args) {\n    print(args[0]);\n}'
+  graphs: GraphDto[] = []
 
   constructor(private router: Router,
               private authService: AuthService) {
@@ -20,6 +24,12 @@ export class MainComponent implements AfterViewInit {
         console.log(err)
       }
     })
+  }
+
+  onViewClick(event: { input: string, output: GraphDto[] }) {
+    this.code = event.input
+    this.graphs = event.output
+    this.selectCode()
   }
 
   isAdmin(): boolean {
@@ -35,6 +45,6 @@ export class MainComponent implements AfterViewInit {
   }
 
   selectLogout() {
-    this.router.navigate(['/logout'], {replaceUrl: true})
+    this.router.navigate(['/logout'], { replaceUrl: true })
   }
 }

@@ -1,6 +1,17 @@
 <div class="container">
-  <ngx-graph [nodes]="nodes"
+  <div *ngIf="nodes.length === 0 && !rendered" class="placeholder">
+    <span>
+     Nothing to see here yet.
+    </span>
+    <span>
+      Start building now!
+    </span>
+  </div>
+  <ngx-graph *ngIf="nodes.length > 0 || rendered"
+             [nodes]="nodes"
              [links]="links"
+             [miniMapMaxHeight]="200"
+             [miniMapMaxWidth]="200"
              [layout]="layout">
     <ng-template #defsTemplate>
       <svg>
@@ -12,38 +23,38 @@
     <ng-template #nodeTemplate let-node>
       <svg viewBox="0 0 260 160" width="130" height="80">
         <style>
-          .text-container {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            .text-container {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
 
-          }
+            }
 
-          .text-container .inner-container {
-            width: 80%;
-            height: 80%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          }
+            .text-container .inner-container {
+                width: 80%;
+                height: 80%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
 
-          .text-container .inner-container pre {
-            white-space: pre-wrap;
-            font-family: Arial, sans-serif;
-            font-size: 20px;
-            text-align: center;
-          }
+            .text-container .inner-container pre {
+                white-space: pre-wrap;
+                font-family: Arial, sans-serif;
+                font-size: 20px;
+                text-align: center;
+            }
 
-          .link-text {
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            text-anchor: middle;
-            dominant-baseline: middle;
-          }
+            .link-text {
+                font-family: Arial, sans-serif;
+                font-size: 16px;
+                text-anchor: middle;
+                dominant-baseline: middle;
+            }
         </style>
         <path *ngIf="node['data']['type'] === 'START_END'" d="M80,155 a40,40 0 0 1 0 -150 h100 a40,40 0 0 1 0 150 z"
               fill="white" stroke="black" stroke-width="5"/>

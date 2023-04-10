@@ -1,7 +1,32 @@
 :host {
+  ::ng-deep {
+    svg.ngx-charts {
+      border-radius: 2em;
+    }
+  }
+
   .container {
     width: 100%;
     height: 100%;
-    cursor: crosshair;
+    backdrop-filter: blur(4px);
+    border-radius: 2em;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+
+    .placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      user-select: none;
+
+      span {
+        font-weight: 600;
+        font-size: 4rem;
+      }
+    }
   }
 }

@@ -11,9 +11,12 @@ import * as htmlToImage from 'html-to-image';
 export class GraphViewerComponent implements OnChanges {
   @Input('graphDtoList') graphDtoList: GraphDto[] = []
 
+  rendered = false
+
   nodes: Node[] = []
   links: Edge[] = []
   layout = new DagreLayout()
+  showMiniMap = true
 
   constructor() {
     this.layout.defaultSettings.orientation = Orientation.TOP_TO_BOTTOM
@@ -21,7 +24,10 @@ export class GraphViewerComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['graphDtoList']) this.drawGraph()
+    if (changes['graphDtoList'] ) {
+      this.rendered = !changes['graphDtoList'].isFirstChange()
+      this.drawGraph()
+    }
   }
 
   drawGraph() {

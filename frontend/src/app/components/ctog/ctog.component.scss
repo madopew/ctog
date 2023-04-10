@@ -85,12 +85,31 @@
           cursor: pointer;
           padding: 0.3em;
           border-radius: 0.3em;
+          margin-bottom: 0.3em;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
 
           &.build {
             background: #a5d6a7;
 
             &:hover {
               background: #c8e6c9 !important;
+            }
+          }
+
+          &.clear {
+            background: map-get($ctog-warn, 200);
+
+            &:hover {
+              background: map-get($ctog-warn, 100) !important;
+            }
+          }
+
+          &:hover {
+            .t-text {
+              background: map-get($ctog-primary, 100);
             }
           }
 
@@ -103,10 +122,6 @@
             border-radius: 0.3em;
             width: 2em;
             height: 2em;
-
-            &:hover {
-              background: map-get($ctog-primary, 100);
-            }
 
             span {
               font-size: 0.9rem;

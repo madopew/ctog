@@ -28,12 +28,15 @@ class GraphBuilder(
     }
 
     private class BuildGraphVisitor(
-            val config: GraphConfiguration,
-            val isLocal: (String) -> Boolean
+        val config: GraphConfiguration,
+        val isLocal: (String) -> Boolean
     ) {
         var cycleDepth = 1
         val nodes = mutableListOf<GraphNode>()
         val edges = mutableMapOf<Int, MutableMap<Int, String?>>()
+        var functionContext: GraphNode? = null
+        val breakContext: ArrayDeque<GraphNode> = ArrayDeque()
+        val continueContext: ArrayDeque<GraphNode> = ArrayDeque()
 
         fun build(function: CodeFunction): Graph {
             visitCodeFunction(function)
@@ -48,6 +51,8 @@ class GraphBuilder(
         fun visitCodeFunction(function: CodeFunction) {
             val startNode = GraphNode(type = NodeType.START_END, text = function.definition)
             val endNode = GraphNode(type = NodeType.START_END, text = config.endKeyword)
+
+            functionContext = endNode
             nodes.add(startNode)
             addEdge(startNode, visitStatements(function.statements, endNode), null)
             nodes.add(endNode)
@@ -84,14 +89,35 @@ class GraphBuilder(
         fun visitCodeExpression(statement: CodeExpression, last: GraphNode): GraphNode {
             val type = when (statement.type) {
                 ExpressionType.DECLARATION -> NodeType.INPUT
-                ExpressionType.RETURN -> NodeType.ACTION
-                ExpressionType.OTHER -> NodeType.ACTION
+                else -> NodeType.ACTION
             }
 
             val node = GraphNode(type = type, text = statement.body)
             nodes.add(node)
 
-            addEdge(node, last, null)
+            when (statement.type) {
+                ExpressionType.RETURN -> {
+                    addEdge(node, functionContext!!, null)
+                }
+                ExpressionType.BREAK -> {
+                    if (breakContext.isNotEmpty()) {
+                        addEdge(node, breakContext.last(), null)
+                    } else {
+                        addEdge(node, last, null)
+                    }
+                }
+                ExpressionType.CONTINUE -> {
+                    if (continueContext.isNotEmpty()) {
+                        addEdge(node, continueContext.last(), null)
+                    } else {
+                        addEdge(node, last, null)
+                    }
+                }
+                else -> {
+                    addEdge(node, last, null)
+                }
+            }
+
             return node
         }
 
@@ -119,6 +145,9 @@ class GraphBuilder(
                 GraphNode(type = NodeType.CYCLE_END, text = "$depthText\n${statement.condition}")
             }
 
+            breakContext.addLast(last)
+            continueContext.addLast(endNode)
+
             nodes.add(startNode)
 
             addEdge(startNode, visitStatements(statement.body, endNode), null)
@@ -126,6 +155,9 @@ class GraphBuilder(
             cycleDepth--
 
             nodes.add(endNode)
+
+            breakContext.removeLast()
+            continueContext.removeLast()
 
             return startNode
         }

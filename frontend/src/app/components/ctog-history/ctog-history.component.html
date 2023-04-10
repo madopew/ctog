@@ -1,8 +1,39 @@
 <div class="container">
-  <mat-paginator (page)="onPage($event)"
-                 [showFirstLastButtons]="true"
-                 [length]="totalElements"
-                 [pageSize]="10"
-                 [hidePageSize]="true"
-  ></mat-paginator>
+  <div class="table-container">
+    <div class="element heading">
+      <div class="time">
+        <span>Time</span>
+      </div>
+      <div class="input">
+        <span>Input</span>
+      </div>
+      <div class="output">
+        <span>Output</span>
+      </div>
+      <div class="action">
+        <span>Action</span>
+      </div>
+    </div>
+    <div class="content-container" #scrollableContent>
+      <div class="element" *ngFor="let req of content">
+        <div class="time">
+          <span>{{req['ts'] | date : 'HH:mm dd.MM.yy'}}</span>
+        </div>
+        <div class="input">
+          <pre>{{req['input']}}</pre>
+        </div>
+        <div class="output">
+          <span>{{shortGraph(req['output'])}}</span>
+        </div>
+        <div class="action">
+          <button class="outlined" (click)="onViewClick(req)">View</button>
+        </div>
+      </div>
+    </div>
+    <mat-paginator (page)="onPage($event)"
+                   [pageSize]="size"
+                   [showFirstLastButtons]="true"
+                   [hidePageSize]="true"
+                   [length]="totalElements"></mat-paginator>
+  </div>
 </div>

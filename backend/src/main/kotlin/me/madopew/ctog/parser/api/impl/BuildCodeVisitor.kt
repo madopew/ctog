@@ -57,7 +57,12 @@ internal class BuildCodeVisitor {
 
     private fun visitJumpStatementNode(node: JumpStatementNode) =
         CodeExpression(
-            if (node.type == JumpStatementNodeType.RETURN) ExpressionType.RETURN else ExpressionType.OTHER,
+            when (node.type) {
+                JumpStatementNodeType.RETURN -> ExpressionType.RETURN
+                JumpStatementNodeType.BREAK -> ExpressionType.BREAK
+                JumpStatementNodeType.CONTINUE -> ExpressionType.CONTINUE
+                else -> ExpressionType.OTHER
+            },
             node.toReadableString()
         )
 

@@ -18,6 +18,7 @@ import {MatTooltipModule} from "@angular/material/tooltip";
 import {GraphModule} from "@swimlane/ngx-graph";
 import { CtogHistoryComponent } from './components/ctog-history/ctog-history.component';
 import {MatPaginatorModule} from "@angular/material/paginator";
+import { MatSnackBarModule } from '@angular/material/snack-bar'
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import {MatPaginatorModule} from "@angular/material/paginator";
     MatIconModule,
     MatTooltipModule,
     GraphModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatSnackBarModule
   ],
   providers: [
     {

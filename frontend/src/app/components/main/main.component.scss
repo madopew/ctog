@@ -37,6 +37,11 @@
           box-sizing: border-box;
           padding: 1em;
           border-radius: 0.9em;
+          margin-right: 0.5em;
+
+          &:last-child {
+            margin-right: 0;
+          }
 
           &:hover {
             background: map-get($ctog-primary, 100) !important;
