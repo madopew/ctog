@@ -1,0 +1,46 @@
+<mxfile host="Electron" modified="2023-04-13T21:31:56.932Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="o5Ru_H5jGHOmSIzq_HRm" version="21.1.2" type="device">
+  <diagram name="Page-1" id="enBz0AplwqZG5z4FJNIj">
+    <mxGraphModel dx="989" dy="577" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-1" value="" style="verticalLabelPosition=bottom;verticalAlign=top;html=1;shape=mxgraph.basic.acute_triangle;dx=0.5;" vertex="1" parent="1">
+          <mxGeometry x="240" y="160" width="320" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-2" value="дерево синтаксического разбора" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="291" y="356" width="220" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-3" value="абстрактно-синтаксическое&lt;br style=&quot;font-size: 14px;&quot;&gt;дерево" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="305" y="280" width="190" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-4" value="дерево &lt;br&gt;конструкций&lt;br style=&quot;font-size: 14px;&quot;&gt;алгоритма" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Times New Roman;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="350" y="200" width="100" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-5" value="" style="endArrow=none;html=1;rounded=0;entryX=0.272;entryY=0.454;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.725;exitY=0.45;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1" source="WG57UaWCZP9KEaBF0SVL-1" target="WG57UaWCZP9KEaBF0SVL-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="210" y="320" as="sourcePoint" />
+            <mxPoint x="260" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-7" value="" style="endArrow=none;html=1;rounded=0;exitX=0.122;exitY=0.757;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.877;entryY=0.76;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="WG57UaWCZP9KEaBF0SVL-1" target="WG57UaWCZP9KEaBF0SVL-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="410" y="330" as="sourcePoint" />
+            <mxPoint x="460" y="280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-8" value="" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0.6;dx=40;direction=south;notch=0;rotation=-180;" vertex="1" parent="1">
+          <mxGeometry x="170" y="160" width="70" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-9" value="" style="html=1;shadow=0;dashed=0;align=center;verticalAlign=middle;shape=mxgraph.arrows2.arrow;dy=0.6;dx=40;direction=south;notch=0;rotation=0;" vertex="1" parent="1">
+          <mxGeometry x="560" y="160" width="70" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-11" value="уровень абстракции" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Times New Roman;fontSize=14;rotation=-90;" vertex="1" parent="1">
+          <mxGeometry x="135" y="260" width="140" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="WG57UaWCZP9KEaBF0SVL-12" value="количество элеметнов" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Times New Roman;fontSize=14;rotation=90;" vertex="1" parent="1">
+          <mxGeometry x="515" y="270" width="160" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
