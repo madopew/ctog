@@ -1,0 +1,973 @@
+@ControllerAdvice
+class RestExceptionConfig {
+    @ExceptionHandler(MethodArgumentNotValidException::class)
+    fun handlerExceptionResolver(ex: MethodArgumentNotValidException, response: HttpServletResponse) {
+        response.handleException(ValidationException(ex))
+    }
+}
+@Configuration
+class SecurityConfig {
+    @Bean
+    fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
+    @Bean
+    fun filterChain(
+            http: HttpSecurity,
+            authenticationProvider: AuthenticationProvider,
+            jwtFilter: JwtFilter,
+            exceptionFilter: ExceptionFilter,
+            corsFilter: CorsFilter
+    ): SecurityFilterChain {
+        return http.csrf().disable()
+                .authorizeHttpRequests()
+                .antMatchers(HttpMethod.OPTIONS).permitAll()
+                .antMatchers("$API_AUTH/login").permitAll()
+                .antMatchers("$API_AUTH/me").authenticated()
+                .antMatchers("$API_GRAPH/**").hasAnyAuthority(ROLE_DEFAULT, ROLE_ADMIN)
+                .antMatchers("$API_ADMIN/**").hasAuthority(ROLE_ADMIN)
+                .anyRequest().authenticated()
+                .and()
+                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter::class.java)
+                .addFilterBefore(exceptionFilter, WebAsyncManagerIntegrationFilter::class.java)
+                .addFilterBefore(corsFilter, ExceptionFilter::class.java)
+                .exceptionHandling()
+                .authenticationEntryPoint { _, _, _ -> throw UnauthenticatedException() }
+                .accessDeniedHandler { _, _, _ -> throw ForbiddenException() }
+                .and()
+                .build()
+    }
+    @Bean
+    fun authenticationProvider(
+            userDetailsService: UserDetailsService,
+            passwordEncoder: PasswordEncoder
+    ): AuthenticationProvider {
+        val provider = DaoAuthenticationProvider()
+        provider.setUserDetailsService(userDetailsService)
+        provider.setPasswordEncoder(passwordEncoder)
+        return provider
+    }
+    @Bean
+    fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager {
+        return config.authenticationManager
+    }
+    @Bean
+    fun jwtSecretKey(@Value("\${custom.security.key.secret}") secretKey: String): Key {
+        return Keys.hmacShaKeyFor(Decoders.BASE64.decode(secretKey))
+    }
+    @Bean
+    fun jwtParser(key: Key): JwtParser =
+            Jwts.parserBuilder().setSigningKey(key).build()
+}
+const val API_AUTH = "/api/v1/auth"
+const val API_GRAPH = "/api/v1/graph"
+const val API_ADMIN = "/api/v1/admin"
+const val ROLE_ADMIN = "ADMIN"
+const val ROLE_DEFAULT = "DEFAULT"
+const val FRONTEND_URL = "http://localhost:4200"
+@RestController
+@RequestMapping(API_ADMIN)
+class AdminController(
+    private val userService: UserService
+) {
+    @GetMapping("/users")
+    fun getAllUsers() = userService.getAll()
+}
+@RestController
+@RequestMapping(API_AUTH)
+class AuthController(
+        private val authService: AuthService
+) {
+    @PostMapping("/login")
+    fun login(@Valid @RequestBody request: AuthDto): LoginResponseDto {
+        return authService.login(request)
+    }
+    @GetMapping("/me")
+    fun me() {
+    }
+}
+@RestController
+@RequestMapping(API_GRAPH)
+class GraphController(
+    private val graphService: GraphService
+) {
+    @PostMapping
+    fun getGraph(@RequestBody(required = false) source: String?): List<GraphDto> {
+        val user = SecurityContextHolder.getContext().authentication.principal as UserDetails
+        return graphService.build(user, source).map { it.toDto() }
+    }
+    @PostMapping("/filter")
+    fun filterRequests(
+        @PageableDefault(
+            sort = ["ts"],
+            direction = Sort.Direction.DESC
+        ) pageRequest: Pageable
+    ): Page<GraphRequestDto> {
+        val user = SecurityContextHolder.getContext().authentication.principal as UserDetails
+        return graphService.filter(user, pageRequest).map { it.toDto() }
+    }
+}
+@SpringBootApplication
+class CtogApplication
+fun main(args: Array<String>) {
+    runApplication<CtogApplication>(*args)
+}
+data class GraphDto(
+    val nodes: List<GraphNodeDto>,
+    val edges: Map<Int, Map<Int, String?>>
+)
+data class GraphNodeDto(
+        val type: NodeType,
+        val text: String
+)
+data class GraphRequestDto(
+        val ts: Instant,
+        val input: String,
+        val output: List<GraphDto>
+)
+class AuthDto {
+    @NotNull
+    @Size(min = 5, message = "Username should be at least 5 characters long")
+    @Pattern(regexp = "^[a-z]+\$", message = "Username should contain only lowercase english letters")
+    lateinit var username: String
+    @NotNull
+    @NotEmpty
+    @Size(min = 7, message = "Password should be at least 7 characters long")
+    lateinit var password: String
+}
+data class LoginResponseDto(
+    val token: String
+)
+class UserDetailsDto(
+        private val username: String,
+        private val password: String,
+        role: String
+) : UserDetails {
+    private val authorities = listOf(SimpleGrantedAuthority(role))
+    constructor(user: UserInfo) : this(
+            user.username,
+            user.passwordHash,
+            user.userRole.name
+    )
+    override fun getAuthorities() = authorities
+    override fun getPassword() = password
+    override fun getUsername() = username
+    override fun isAccountNonExpired() = true
+    override fun isAccountNonLocked() = true
+    override fun isCredentialsNonExpired() = true
+    override fun isEnabled() = true
+}
+data class HttpErrorDto(
+    val message: String,
+    val httpStatusCode: Int
+)
+class BadRequestException(msg: String) : CtogException(msg, 400)
+open class CtogException(
+    override val message: String,
+    val httpCode: Int
+): Exception()
+class ForbiddenException : CtogException("You do not have permission to access this resource", 403)
+class NotFoundException(msg: String) : CtogException(msg, 404)
+class ParserException(message: String): CtogException(message, 400)
+class ServerException : CtogException("Something went wrong", 500)
+class UnauthenticatedException : CtogException("Check your credentials", 401)
+class ValidationException(ex: MethodArgumentNotValidException): CtogException(
+    ex.allErrors.first().defaultMessage ?: "Provided parameters do not pass validation", 400
+)
+private val logger = LoggerFactory.getLogger("ServletExtension")
+fun HttpServletResponse.handleException(e: Exception) {
+    logger.warn("Handling response exception", e)
+    if (e is CtogException) {
+        this.handleBusinessException(e)
+    } else {
+        this.handleBusinessException(ServerException())
+    }
+}
+private fun HttpServletResponse.handleBusinessException(e: CtogException) {
+    val error = e.toHttpError()
+    this.contentType = MediaType.APPLICATION_JSON_VALUE
+    this.status = error.httpStatusCode
+    jacksonObjectMapper().writeValue(this.outputStream, error)
+    this.outputStream.flush()
+}
+class GraphBuilder(
+    private val config: GraphConfiguration = GraphConfiguration.DEFAULT
+) {
+    fun build(program: CodeProgram): List<Graph> {
+        val functionNames = program.functions.map { it.name }
+        val isLocal = { name: String ->
+            functionNames.any { it == name }
+        }
+        return program.functions.map { BuildGraphVisitor(config, isLocal).build(it) }
+    }
+    private class BuildGraphVisitor(
+        val config: GraphConfiguration,
+        val isLocal: (String) -> Boolean
+    ) {
+        var cycleDepth = 1
+        val nodes = mutableListOf<GraphNode>()
+        val edges = mutableMapOf<Int, MutableMap<Int, String?>>()
+        var functionContext: GraphNode? = null
+        val breakContext: ArrayDeque<GraphNode> = ArrayDeque()
+        val continueContext: ArrayDeque<GraphNode> = ArrayDeque()
+        fun build(function: CodeFunction): Graph {
+            visitCodeFunction(function)
+            return Graph(nodes, edges)
+        }
+        fun addEdge(from: GraphNode, to: GraphNode, label: String?) {
+            if (!edges.containsKey(from.id)) edges[from.id] = mutableMapOf()
+            edges[from.id]!![to.id] = label
+        }
+        fun visitCodeFunction(function: CodeFunction) {
+            val startNode = GraphNode(type = NodeType.START_END, text = function.definition)
+            val endNode = GraphNode(type = NodeType.START_END, text = config.endKeyword)
+            functionContext = endNode
+            nodes.add(startNode)
+            addEdge(startNode, visitStatements(function.statements, endNode), null)
+            nodes.add(endNode)
+        }
+        fun visitStatements(statements: List<CodeStatement>, last: GraphNode): GraphNode {
+            if (statements.isEmpty()) return last
+            if (statements.size == 1) return visitStatement(statements.first(), last)
+            return visitStatement(statements.first(), visitStatements(statements.drop(1), last))
+        }
+        fun visitStatement(statement: CodeStatement, last: GraphNode): GraphNode = when (statement) {
+            is CodeCall -> visitCodeCall(statement, last)
+            is CodeExpression -> visitCodeExpression(statement, last)
+            is CodeIfSelection -> visitCodeIfSelection(statement, last)
+            is CodeIteration -> visitCodeIteration(statement, last)
+            is CodeSwitchSelection -> visitCodeSwitchSelection(statement, last)
+            else -> throw IllegalArgumentException("Unsupported statement type: ${statement.javaClass.name}")
+        }
+        fun visitCodeCall(statement: CodeCall, last: GraphNode): GraphNode {
+            val type = if (isLocal(statement.functionName)) NodeType.LOCAL_ACTION
+            else if (config.isInputFunction(statement.functionName)) NodeType.INPUT
+            else if (config.isOutputFunction(statement.functionName)) NodeType.OUTPUT
+            else NodeType.ACTION
+            val node = GraphNode(type = type, text = statement.toString())
+            nodes.add(node)
+            addEdge(node, last, null)
+            return node
+        }
+        fun visitCodeExpression(statement: CodeExpression, last: GraphNode): GraphNode {
+            val type = when (statement.type) {
+                ExpressionType.DECLARATION -> NodeType.INPUT
+                else -> NodeType.ACTION
+            }
+            val node = GraphNode(type = type, text = statement.body)
+            nodes.add(node)
+            when (statement.type) {
+                ExpressionType.RETURN -> {
+                    addEdge(node, functionContext!!, null)
+                }
+                ExpressionType.BREAK -> {
+                    if (breakContext.isNotEmpty()) {
+                        addEdge(node, breakContext.last(), null)
+                    } else {
+                        addEdge(node, last, null)
+                    }
+                }
+                ExpressionType.CONTINUE -> {
+                    if (continueContext.isNotEmpty()) {
+                        addEdge(node, continueContext.last(), null)
+                    } else {
+                        addEdge(node, last, null)
+                    }
+                }
+                else -> {
+                    addEdge(node, last, null)
+                }
+            }
+            return node
+        }
+        fun visitCodeIfSelection(statement: CodeIfSelection, last: GraphNode): GraphNode {
+            val node = GraphNode(type = NodeType.CONDITION, text = statement.condition)
+            nodes.add(node)
+            addEdge(node, visitStatements(statement.ifBody, last), config.trueKeyword)
+            addEdge(node, visitStatements(statement.elseBody, last), config.falseKeyword)
+            return node
+        }
+        fun visitCodeIteration(statement: CodeIteration, last: GraphNode): GraphNode {
+            val depthText = "${config.depthKeyword}${cycleDepth++}"
+            val startNode = if (statement.type == IterationType.PRE_CONDITION) {
+                GraphNode(type = NodeType.CYCLE_START, text = "$depthText\n${statement.condition}")
+            } else {
+                GraphNode(type = NodeType.CYCLE_START, text = depthText)
+            }
+            val endNode = if (statement.type == IterationType.PRE_CONDITION) {
+                GraphNode(type = NodeType.CYCLE_END, text = depthText)
+            } else {
+                GraphNode(type = NodeType.CYCLE_END, text = "$depthText\n${statement.condition}")
+            }
+            breakContext.addLast(last)
+            continueContext.addLast(endNode)
+            nodes.add(startNode)
+            addEdge(startNode, visitStatements(statement.body, endNode), null)
+            addEdge(endNode, last, null)
+            cycleDepth--
+            nodes.add(endNode)
+            breakContext.removeLast()
+            continueContext.removeLast()
+            return startNode
+        }
+        fun visitCodeSwitchSelection(statement: CodeSwitchSelection, last: GraphNode): GraphNode {
+            val startNode = GraphNode(type = NodeType.CONDITION, text = statement.condition)
+            nodes.add(startNode)
+            statement.cases.forEach { (case, body) ->
+                addEdge(startNode, visitStatements(body, last), case)
+            }
+            return startNode
+        }
+    }
+}
+fun Graph.toDto(): GraphDto {
+    val nodes = this.nodes.map { it.toDto() }
+    val edges = mutableMapOf<Int, MutableMap<Int, String?>>()
+    this.edges.forEach { (fromId, toList) ->
+        val fromNode = this.nodes.single { it.id == fromId }
+        val fromIndex = this.nodes.indexOf(fromNode)
+        edges[fromIndex] = mutableMapOf()
+        toList.forEach { (toId, text) ->
+            val toNode = this.nodes.single { it.id == toId }
+            val toIndex = this.nodes.indexOf(toNode)
+            edges[fromIndex]!![toIndex] = text
+        }
+    }
+    return GraphDto(nodes, edges)
+}
+fun GraphNode.toDto(): GraphNodeDto =
+        GraphNodeDto(this.type, this.text)
+fun GraphRequest.toDto() = GraphRequestDto(
+        ts,
+        input,
+        jacksonObjectMapper().readValue(output, object : TypeReference<List<Graph>>() {}).map { it.toDto() }
+)
+fun CtogException.toHttpError() = HttpErrorDto(this.message, this.httpCode)
+data class Graph(
+        val nodes: List<GraphNode>,
+        val edges: Map<Int, Map<Int, String?>>
+)
+data class GraphConfiguration(
+    val endKeyword: String,
+    val trueKeyword: String,
+    val falseKeyword: String,
+    val depthKeyword: String,
+    val inputFunctions: List<String>,
+    val outputFunctions: List<String>
+) {
+    fun isInputFunction(function: String) = inputFunctions.contains(function)
+    fun isOutputFunction(function: String) = outputFunctions.contains(function)
+    companion object {
+        val DEFAULT = GraphConfiguration(
+            endKeyword = "end.",
+            trueKeyword = "true",
+            falseKeyword = "false",
+            depthKeyword = "A",
+            inputFunctions = listOf("input", "read"),
+            outputFunctions = listOf("output", "print")
+        )
+    }
+}
+data class GraphNode(
+        val id: Int = Random.nextInt(),
+        val type: NodeType,
+        val text: String
+)
+@Entity
+class GraphRequest {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id = 0
+    @Column(nullable = false)
+    lateinit var input: String
+    @Column(nullable = false)
+    lateinit var output: String
+    @Column(nullable = false)
+    var ts: Instant = Instant.now()
+    @ManyToOne
+    @JoinColumn(name = "user_info_id", nullable = false)
+    lateinit var userInfo: UserInfo
+}
+enum class NodeType {
+    START_END,
+    CYCLE_START,
+    CYCLE_END,
+    ACTION,
+    LOCAL_ACTION,
+    CONDITION,
+    INPUT,
+    OUTPUT
+}
+@Entity
+class UserInfo {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id = 0
+    @Column(nullable = false)
+    lateinit var username: String
+    @Column(nullable = false)
+    lateinit var passwordHash: String
+    @ManyToOne
+    @JoinColumn(name = "user_role_id", nullable = false, insertable = false, updatable = false)
+    @LazyCollection(LazyCollectionOption.FALSE)
+    lateinit var userRole: UserRole
+    @OneToMany(mappedBy = "userInfo", cascade = [CascadeType.ALL])
+    lateinit var requests: MutableList<GraphRequest>
+}
+@Entity
+class UserRole {
+    @Id
+    private var id = 0
+    @Column(nullable = false)
+    lateinit var name: String
+    @OneToMany(mappedBy = "userRole")
+    private lateinit var users: Set<UserInfo>
+}
+internal class BuildCodeVisitor {
+    fun visitProgramNode(node: ProgramNode): CodeProgram {
+        return CodeProgram(
+            functions = node.functions.map { visitFunctionNode(it) }
+        )
+    }
+    private fun visitFunctionNode(node: FunctionNode): CodeFunction {
+        return CodeFunction(
+            name = node.name!!,
+            definition = node.definition!!,
+            statements = node.body!!.statements.flatMap { visitStatementNode(it) }
+        )
+    }
+    private fun visitStatementNode(node: StatementNode): List<CodeStatement> = when (node) {
+        is CompoundStatementNode -> node.statements.flatMap { visitStatementNode(it) }
+        is DeclarationStatementNode -> listOf(visitDeclarationStatementNode(node))
+        is FunctionCallStatementNode -> listOf(visitFunctionCallStatementNode(node))
+        is IfStatementNode -> listOf(visitIfStatementNode(node))
+        is IterationStatementNode -> listOf(visitIterationStatementNode(node))
+        is JumpStatementNode -> listOf(visitJumpStatementNode(node))
+        is LabeledStatementNode -> listOf()
+        is NoOpStatementNode -> listOf()
+        is OtherExpressionStatementNode -> listOf(visitOtherExpressionStatementNode(node))
+        is SwitchStatementNode -> listOf(visitSwitchStatementNode(node))
+        else -> throw IllegalArgumentException("Cannot visit $node")
+    }
+    private fun visitDeclarationStatementNode(node: DeclarationStatementNode) =
+        CodeExpression(ExpressionType.DECLARATION, node.name!!)
+    private fun visitFunctionCallStatementNode(node: FunctionCallStatementNode) =
+        CodeCall(node.name!!, node.arguments ?: "")
+    private fun visitIfStatementNode(node: IfStatementNode) =
+        CodeIfSelection(
+            node.condition!!,
+            visitStatementNode(node.ifBody!!),
+            if (node.elseBody != null) visitStatementNode(node.elseBody!!) else listOf()
+        )
+    private fun visitIterationStatementNode(node: IterationStatementNode): CodeIteration {
+        val type = when (node.type!!) {
+            IterationStatementNodeType.FOR -> IterationType.PRE_CONDITION
+            IterationStatementNodeType.WHILE -> IterationType.PRE_CONDITION
+            IterationStatementNodeType.DO_WHILE -> IterationType.POST_CONDITION
+        }
+        return CodeIteration(type, node.condition!!, visitStatementNode(node.body!!))
+    }
+    private fun visitJumpStatementNode(node: JumpStatementNode) =
+        CodeExpression(
+            when (node.type) {
+                JumpStatementNodeType.RETURN -> ExpressionType.RETURN
+                JumpStatementNodeType.BREAK -> ExpressionType.BREAK
+                JumpStatementNodeType.CONTINUE -> ExpressionType.CONTINUE
+                else -> ExpressionType.OTHER
+            },
+            node.toReadableString()
+        )
+    private fun visitOtherExpressionStatementNode(node: OtherExpressionStatementNode) =
+        CodeExpression(type = ExpressionType.OTHER, body = node.body!!)
+    private fun visitSwitchStatementNode(node: SwitchStatementNode) =
+        CodeSwitchSelection(
+            node.condition!!,
+            node.body.associate { labeledStatement ->
+                val label = labeledStatement.label ?: "default"
+                val statements = labeledStatement.body!!.statements.flatMap { visitStatementNode(it) }
+                label to statements
+            }
+        )
+    private fun JumpStatementNode.toReadableString(): String {
+        return if (label != null) "$type $label" else type.toString()
+    }
+}
+data class CodeCall(
+    val functionName: String,
+    val argumentList: String
+) : CodeStatement {
+    override fun toString(): String {
+        return "$functionName($argumentList)"
+    }
+}
+data class CodeExpression(
+    val type: ExpressionType,
+    val body: String
+) : CodeStatement
+data class CodeFunction(
+    val name: String,
+    val definition: String,
+    val statements: List<CodeStatement>
+)
+data class CodeIfSelection(
+    val condition: String,
+    val ifBody: List<CodeStatement>,
+    val elseBody: List<CodeStatement>
+) : CodeStatement
+data class CodeIteration(
+    val type: IterationType,
+    val condition: String,
+    val body: List<CodeStatement>
+) : CodeStatement
+data class CodeProgram(
+    val functions: List<CodeFunction>
+)
+interface CodeStatement {
+}
+data class CodeSwitchSelection(
+    val condition: String,
+    val cases: Map<String, List<CodeStatement>>
+) : CodeStatement
+enum class ExpressionType {
+    DECLARATION,
+    RETURN,
+    BREAK,
+    CONTINUE,
+    OTHER
+}
+enum class IterationType {
+    PRE_CONDITION,
+    POST_CONDITION,
+}
+internal class BuildAstVisitor(
+    private val tokens: List<String>
+) : CBaseVisitor<CNode?>() {
+    override fun visitCompilationUnit(ctx: CParser.CompilationUnitContext): ProgramNode {
+        return if (ctx.translationUnit() != null) {
+            visitTranslationUnit(ctx.translationUnit())
+        } else {
+            ProgramNode()
+        }
+    }
+    override fun visitTranslationUnit(ctx: CParser.TranslationUnitContext): ProgramNode {
+        return ProgramNode().apply {
+            functions = ctx.functionDefinition()
+                .map { visitFunctionDefinition(it) }
+                .toMutableList()
+        }
+    }
+    override fun visitFunctionDefinition(ctx: CParser.FunctionDefinitionContext): FunctionNode {
+        val functionDefinition = buildString {
+            append(ctx.Function().text)
+            append(' ')
+            append(ctx.declarator().fullText)
+            if (ctx.declarationSpecifiers() != null) {
+                append(ctx.Colon().text)
+                append(' ')
+                append(ctx.declarationSpecifiers().fullText)
+            }
+        }
+        return FunctionNode().apply {
+            name = ctx.declarator().directDeclarator().directDeclarator().Identifier().text
+            definition = functionDefinition
+            body = visitCompoundStatement(ctx.compoundStatement())
+        }
+    }
+    override fun visitCompoundStatement(ctx: CParser.CompoundStatementContext): CompoundStatementNode {
+        return if (ctx.blockItemList() != null) {
+            visitBlockItemList(ctx.blockItemList())
+        } else {
+            CompoundStatementNode()
+        }
+    }
+    override fun visitBlockItemList(ctx: CParser.BlockItemListContext): CompoundStatementNode {
+        return CompoundStatementNode().apply {
+            statements = ctx.blockItem()
+                .mapNotNull { visitBlockItem(it) }
+                .toMutableList()
+        }
+    }
+    override fun visitBlockItem(ctx: CParser.BlockItemContext): StatementNode {
+        return super.visitBlockItem(ctx) as StatementNode
+    }
+    override fun visitStatement(ctx: CParser.StatementContext): StatementNode {
+        return super.visitStatement(ctx) as StatementNode
+    }
+    override fun visitDeclaration(ctx: CParser.DeclarationContext): DeclarationStatementNode {
+        return DeclarationStatementNode().apply {
+            name = buildString {
+                append(ctx.declarationSpecifiers().fullText)
+                if (ctx.initDeclaratorList() != null) {
+                    append(' ')
+                    append(ctx.initDeclaratorList().fullText)
+                }
+            }
+        }
+    }
+    override fun visitLabeledStatement(ctx: CParser.LabeledStatementContext): LabeledStatementNode {
+        return LabeledStatementNode().apply {
+            body = visitCompoundStatement(ctx.compoundStatement())
+            if (ctx.Case() != null) {
+                type = LabeledStatementNodeType.CASE
+                label = ctx.constantExpression().fullText
+            } else if (ctx.Default() != null) {
+                type = LabeledStatementNodeType.DEFAULT
+            }
+        }
+    }
+    override fun visitSelectionStatement(ctx: CParser.SelectionStatementContext): SelectionStatementNode {
+        return if (ctx.If() != null) {
+            IfStatementNode().apply {
+                condition = ctx.expression().fullText
+                ifBody = visitCompoundStatement(ctx.compoundStatement(0))
+                if (ctx.compoundStatement(1) != null) elseBody = visitCompoundStatement(ctx.compoundStatement(1))
+            }
+        } else {
+            SwitchStatementNode().apply {
+                condition = ctx.expression().fullText
+                body = ctx.labeledStatement()
+                    .map { visitLabeledStatement(it) }
+                    .toMutableList()
+            }
+        }
+    }
+    override fun visitIterationStatement(ctx: CParser.IterationStatementContext): IterationStatementNode {
+        val iterationType = if (ctx.Do() != null) IterationStatementNodeType.DO_WHILE
+        else if (ctx.For() != null) IterationStatementNodeType.FOR
+        else IterationStatementNodeType.WHILE
+        return IterationStatementNode().apply {
+            type = iterationType
+            condition = if (ctx.forCondition() != null) ctx.forCondition().fullText else ctx.expression().fullText
+            body = visitCompoundStatement(ctx.compoundStatement())
+        }
+    }
+    override fun visitJumpStatement(ctx: CParser.JumpStatementContext): JumpStatementNode {
+        return JumpStatementNode().apply {
+            if (ctx.Continue() != null) {
+                type = JumpStatementNodeType.CONTINUE
+            } else if (ctx.Break() != null) {
+                type = JumpStatementNodeType.BREAK
+            } else {
+                type = JumpStatementNodeType.RETURN
+                if (ctx.expression() != null) label = ctx.expression().fullText
+            }
+        }
+    }
+    override fun visitExpressionStatement(ctx: CParser.ExpressionStatementContext): ExpressionStatementNode {
+        return if (ctx.expression() == null) {
+            NoOpStatementNode()
+        } else {
+            visitExpression(ctx.expression())
+        }
+    }
+    override fun visitExpression(ctx: CParser.ExpressionContext): ExpressionStatementNode {
+        return if (ctx.assignmentExpression().size > 1) {
+            OtherExpressionStatementNode().apply {
+                body = ctx.fullText
+            }
+        } else {
+            visitAssignmentExpression(ctx.assignmentExpression(0))
+        }
+    }
+    override fun visitAssignmentExpression(ctx: CParser.AssignmentExpressionContext): ExpressionStatementNode {
+        return if (ctx.conditionalExpression() != null) {
+            visitConditionalExpression(ctx.conditionalExpression()) as FunctionCallStatementNode?
+                ?: OtherExpressionStatementNode().apply {
+                    body = ctx.fullText
+                }
+        } else {
+            OtherExpressionStatementNode().apply {
+                body = ctx.fullText
+            }
+        }
+    }
+    override fun visitPostfixExpression(ctx: CParser.PostfixExpressionContext): FunctionCallStatementNode? {
+        val isFunctionCall = ctx.children.filterIsInstance<TerminalNode>().singleOrNull { it.text == "(" } != null
+        return if (isFunctionCall) {
+            FunctionCallStatementNode().apply {
+                name = ctx.primaryExpression().fullText
+                if (ctx.argumentExpressionList(0) != null) arguments = ctx.argumentExpressionList(0).fullText
+            }
+        } else {
+            null
+        }
+    }
+    private val ParserRuleContext.fullText: String
+        get() = tokens.subList(start.tokenIndex, stop.tokenIndex + 1).joinToString(" ")
+}
+internal open class CNode {
+}
+internal class CompoundStatementNode: StatementNode() {
+    var statements = mutableListOf<StatementNode>()
+}
+internal class DeclarationStatementNode: StatementNode() {
+    var name: String? = null
+}
+internal open class ExpressionStatementNode: StatementNode() {
+}
+internal class FunctionCallStatementNode: ExpressionStatementNode() {
+    var name: String? = null
+    var arguments: String? = null
+}
+internal class FunctionNode: CNode() {
+    var name: String? = null
+    var definition: String? = null
+    var body: CompoundStatementNode? = null
+}
+internal class IfStatementNode : SelectionStatementNode() {
+    var ifBody: CompoundStatementNode? = null
+    var elseBody: CompoundStatementNode? = null
+}
+internal class IterationStatementNode: StatementNode() {
+    var type: IterationStatementNodeType? = null
+    var condition: String? = null
+    var body: CompoundStatementNode? = null
+}
+enum class IterationStatementNodeType {
+    FOR,
+    WHILE,
+    DO_WHILE
+}
+internal class JumpStatementNode: StatementNode() {
+    var type: JumpStatementNodeType? = null
+    var label: String? = null
+}
+internal enum class JumpStatementNodeType {
+    CONTINUE,
+    BREAK,
+    RETURN;
+    override fun toString(): String = when (this) {
+        CONTINUE -> "continue"
+        BREAK -> "break"
+        RETURN -> "return"
+    }
+}
+internal class LabeledStatementNode: StatementNode() {
+    var type: LabeledStatementNodeType? = null
+    var label: String? = null
+    var body: CompoundStatementNode? = null
+}
+enum class LabeledStatementNodeType {
+    CASE,
+    DEFAULT
+}
+internal class NoOpStatementNode: ExpressionStatementNode() {
+}
+internal class OtherExpressionStatementNode: ExpressionStatementNode() {
+    var body: String? = null
+}
+internal class ProgramNode: CNode() {
+    var functions = mutableListOf<FunctionNode>()
+}
+internal open class SelectionStatementNode: StatementNode() {
+    var condition: String? = null
+}
+internal open class StatementNode: CNode() {
+}
+internal class SwitchStatementNode : SelectionStatementNode() {
+    var body = mutableListOf<LabeledStatementNode>()
+}
+interface GraphRepository : JpaRepository<GraphRequest, Int>, JpaSpecificationExecutor<GraphRequest> {
+    fun findAllByUserInfo(userInfo: UserInfo, pageable: Pageable): Page<GraphRequest>
+}
+interface UserRepository: JpaRepository<UserInfo, Int>, JpaSpecificationExecutor<UserInfo> {
+    fun findByUsername(username: String): UserInfo?
+}
+@Service
+@Transactional
+class GraphService(
+        private val userService: UserService,
+        private val graphRepository: GraphRepository
+) {
+    fun build(user: UserDetails, input: String?): List<Graph> {
+        val userInfo = userService.findByUsername(user.username)
+        val result = build(input)
+        val request = GraphRequest().apply {
+            this.input = input ?: ""
+            this.output = jacksonObjectMapper().writeValueAsString(result)
+            this.userInfo = userInfo
+        }
+        userInfo.requests.add(request)
+        userService.save(userInfo)
+        return result
+    }
+    fun filter(user: UserDetails, pageRequest: Pageable): Page<GraphRequest> {
+        val userInfo = userService.findByUsername(user.username)
+        return graphRepository.findAllByUserInfo(userInfo, pageRequest)
+    }
+    private fun build(input: String?): List<Graph> {
+        if (input == null) return emptyList()
+        val lexer = CLexer(CharStreams.fromString(input))
+        val tokens = lexer.allTokens.map { it.text }
+        lexer.reset()
+        val parser = CParser(CommonTokenStream(lexer)).apply {
+            addErrorListener(object : BaseErrorListener() {
+                override fun syntaxError(
+                        recognizer: Recognizer<*, *>?,
+                        offendingSymbol: Any?,
+                        line: Int,
+                        charPositionInLine: Int,
+                        msg: String?,
+                        e: RecognitionException?
+                ) {
+                    throw ParserException("Syntax error at line $line position $charPositionInLine")
+                }
+            })
+        }
+        val tree = parser.compilationUnit()
+        val astVisitor = BuildAstVisitor(tokens)
+        val programNode = astVisitor.visitCompilationUnit(tree)
+        val codeVisitor = BuildCodeVisitor()
+        val codeProgram = codeVisitor.visitProgramNode(programNode)
+        val graphBuilder = GraphBuilder()
+        return graphBuilder.build(codeProgram)
+    }
+}
+@Component
+@Transactional
+class UserDetailsService(
+        private val userService: UserService
+) : UserDetailsService {
+    override fun loadUserByUsername(username: String): UserDetails {
+        return UserDetailsDto(userService.findByUsername(username))
+    }
+}
+@Service
+@Transactional
+class UserService(
+    private val repo: UserRepository
+) {
+    fun save(user: UserInfo): UserInfo {
+        return repo.save(user)
+    }
+    fun getByUsername(username: String) = repo.findByUsername(username)
+    fun findByUsername(username: String) = getByUsername(username)
+        ?: throw NotFoundException("User $username not found")
+    fun getAll(): List<UserInfo> {
+        return repo.findAll()
+    }
+}
+@Service
+@Transactional
+class AuthService(
+    private val userService: UserService,
+    private val jwtService: JwtService,
+    private val passwordEncoder: PasswordEncoder,
+    private val authenticationManager: AuthenticationManager,
+    private val entityManager: EntityManager
+) {
+    fun login(request: AuthDto): LoginResponseDto {
+        val user = userService.getByUsername(request.username) ?: return register(request)
+        authenticationManager.authenticate(
+            UsernamePasswordAuthenticationToken(request.username, request.password)
+        )
+        return LoginResponseDto(jwtService.generateToken(UserDetailsDto(user)))
+    }
+    private fun register(request: AuthDto): LoginResponseDto {
+        val user = userService.save(
+            UserInfo().apply {
+                username = request.username
+                passwordHash = passwordEncoder.encode(request.password)
+            }
+        )
+        entityManager.refresh(user)
+        return LoginResponseDto(jwtService.generateToken(UserDetailsDto(user)))
+    }
+}
+@Component
+class CorsFilter : OncePerRequestFilter() {
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
+    ) {
+        response.setHeader("Access-Control-Allow-Origin", FRONTEND_URL)
+        response.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type")
+        filterChain.doFilter(request, response)
+    }
+}
+@Component
+class ExceptionFilter : OncePerRequestFilter() {
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
+    ) {
+        try {
+            filterChain.doFilter(request, response)
+        } catch (e: NestedServletException) {
+            response.handleException(e.cause as Exception)
+        } catch (e: Exception) {
+            response.handleException(e)
+        }
+    }
+}
+@Component
+class JwtFilter(
+    private val userDetailsService: UserDetailsService,
+    private val jwtService: JwtService
+) : OncePerRequestFilter() {
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
+    ) {
+        val authHeader = request.getHeader("Authorization")
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response)
+            return
+        }
+        val jwt = authHeader.substring(7)
+        if (SecurityContextHolder.getContext().authentication == null) {
+            val username = jwtService.extractUsername(jwt)
+            val userDetails = this.userDetailsService.loadUserByUsername(username)
+            if (!jwtService.isTokenExpired(jwt)) {
+                val authToken = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
+                authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+                SecurityContextHolder.getContext().authentication = authToken
+            }
+        }
+        filterChain.doFilter(request, response)
+    }
+}
+@Service
+class JwtService(
+    private val jwtParser: JwtParser,
+    private val jwtKey: Key,
+    @Value("\${custom.security.expire.millis}")
+    private val expireTimeMillis: Long
+) {
+    fun generateToken(userDetails: UserDetails): String {
+        val currentTime = System.currentTimeMillis()
+        return Jwts
+            .builder()
+            .setClaims(mapOf("role" to userDetails.authorities.first().authority.lowercase()))
+            .setSubject(userDetails.username)
+            .setIssuedAt(Date(currentTime))
+            .setExpiration(Date(currentTime + expireTimeMillis))
+            .signWith(jwtKey, SignatureAlgorithm.HS256)
+            .compact()
+    }
+    fun extractUsername(jwt: String): String {
+        return extractClaim(jwt, Claims::getSubject)
+    }
+    fun isTokenExpired(token: String): Boolean {
+        return extractExpiration(token).before(Date())
+    }
+    private fun extractExpiration(jwt: String): Date {
+        return extractClaim(jwt, Claims::getExpiration)
+    }
+    private fun <T> extractClaim(jwt: String, resolver: (Claims) -> T): T {
+        val claims = extractAllClaims(jwt)
+        return resolver(claims)
+    }
+    private fun extractAllClaims(jwt: String): Claims {
+        return try {
+            jwtParser.parseClaimsJws(jwt).body
+        } catch (e: Exception) {
+            throw UnauthenticatedException()
+        }
+    }
+}
