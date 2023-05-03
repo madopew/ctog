@@ -1,11 +1,11 @@
-<mxfile host="Electron" modified="2023-05-02T15:00:40.620Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="eoOUJYXKy7pXCZ9cC6zH" version="21.1.2" type="device">
+<mxfile host="Electron" modified="2023-05-03T08:23:08.483Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="Bipjc39FCE_cEftTvo4K" version="21.1.2" type="device">
   <diagram name="Page-1" id="DXjRYRPQSQG1_2DYjN1M">
-    <mxGraphModel dx="4727" dy="2733" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
+    <mxGraphModel dx="7090" dy="4100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="NAu119daPePe2BMLrjtU-4" value="ДИАГРАММА ИСПОЛЬЗОВАНИЯ" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Times New Roman;fontStyle=1;fontSize=64;" vertex="1" parent="1">
-          <mxGeometry x="1120" y="100" width="1060" height="90" as="geometry" />
+        <mxCell id="NAu119daPePe2BMLrjtU-4" value="ДИАГРАММА ВАРИАНТОВ ИСПОЛЬЗОВАНИЯ ВЕБ-СЕРВИСА" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontFamily=Times New Roman;fontStyle=1;fontSize=64;" parent="1" vertex="1">
+          <mxGeometry x="675" y="100" width="1950" height="90" as="geometry" />
         </mxCell>
         <mxCell id="KSQjck4VXTtEsWQFUxek-6" value="Пользователь" style="shape=umlActor;verticalLabelPosition=top;verticalAlign=bottom;html=1;outlineConnect=0;fontFamily=Times New Roman;fontSize=60;container=0;fontStyle=1;labelPosition=center;align=center;strokeWidth=4;" parent="1" vertex="1">
           <mxGeometry x="574.5799999999999" y="744.21" width="101.05246153846153" height="202.10526315789474" as="geometry" />

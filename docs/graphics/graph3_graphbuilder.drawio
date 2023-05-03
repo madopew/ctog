@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2023-05-02T18:44:04.744Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="4nfkCzLLRedYPrj-467i" version="21.1.2" type="device">
+<mxfile host="Electron" modified="2023-05-03T08:20:52.867Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="de078qxS_C82DDg_xwzi" version="21.1.2" type="device">
   <diagram name="Page-1" id="UDpClc-p1MF6tuiHUiTg">
     <mxGraphModel dx="1418" dy="820" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="3300" pageHeight="2339" math="0" shadow="0">
       <root>
@@ -270,7 +270,7 @@
         <mxCell id="hwD3GMBBevqp5VkvTUsK-27" value="&lt;i style=&quot;font-size: 20px;&quot;&gt;ГУИР.951006-03 СА&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontFamily=Times New Roman;fontSize=20;container=0;strokeWidth=4;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="hwD3GMBBevqp5VkvTUsK-2" vertex="1">
           <mxGeometry x="2728.25" y="2082.673999999999" width="275.6" height="59.02" as="geometry" />
         </mxCell>
-        <mxCell id="hwD3GMBBevqp5VkvTUsK-28" value="&lt;i style=&quot;font-size: 20px;&quot;&gt;Обработка операторов&lt;br style=&quot;font-size: 20px;&quot;&gt;перехода.&lt;br style=&quot;font-size: 20px;&quot;&gt;Схема алгоритма&lt;br style=&quot;font-size: 20px;&quot;&gt;&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontFamily=Times New Roman;fontSize=20;container=0;strokeWidth=4;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="hwD3GMBBevqp5VkvTUsK-2" vertex="1">
+        <mxCell id="hwD3GMBBevqp5VkvTUsK-28" value="&lt;i style=&quot;font-size: 20px;&quot;&gt;Схема обработки&lt;br&gt;операторов.&lt;br style=&quot;font-size: 20px;&quot;&gt;Схема алгоритма&lt;br style=&quot;font-size: 20px;&quot;&gt;&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontFamily=Times New Roman;fontSize=20;container=0;strokeWidth=4;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="hwD3GMBBevqp5VkvTUsK-2" vertex="1">
           <mxGeometry x="2728.3499999999995" y="2141.683999999999" width="275.5" height="98.43" as="geometry" />
         </mxCell>
         <mxCell id="hwD3GMBBevqp5VkvTUsK-29" value="&lt;i style=&quot;font-size: 14px;&quot;&gt;ПОИТ, гр. 951006&lt;br style=&quot;font-size: 14px;&quot;&gt;&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontFamily=Times New Roman;fontSize=14;container=0;strokeWidth=4;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="hwD3GMBBevqp5VkvTUsK-2" vertex="1">
@@ -357,7 +357,7 @@
         <mxCell id="hwD3GMBBevqp5VkvTUsK-56" value="&lt;i&gt;Петровская В.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontFamily=Times New Roman;fontSize=12;container=0;strokeWidth=4;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="hwD3GMBBevqp5VkvTUsK-2" vertex="1">
           <mxGeometry x="2539.2969999999996" y="2200.760999999999" width="90.65" height="19.68" as="geometry" />
         </mxCell>
-        <mxCell id="hwD3GMBBevqp5VkvTUsK-57" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontFamily=Times New Roman;fontSize=12;container=0;strokeWidth=4;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="hwD3GMBBevqp5VkvTUsK-2" vertex="1">
+        <mxCell id="hwD3GMBBevqp5VkvTUsK-57" value="&lt;i&gt;Деменковец Д.&lt;/i&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontFamily=Times New Roman;fontSize=12;container=0;strokeWidth=4;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="hwD3GMBBevqp5VkvTUsK-2" vertex="1">
           <mxGeometry x="2539.294" y="2220.447999999999" width="90.65" height="19.68" as="geometry" />
         </mxCell>
         <mxCell id="hwD3GMBBevqp5VkvTUsK-58" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;fontFamily=Times New Roman;fontSize=12;container=0;strokeWidth=4;movable=1;resizable=1;rotatable=1;deletable=1;editable=1;locked=0;connectable=1;" parent="hwD3GMBBevqp5VkvTUsK-2" vertex="1">
