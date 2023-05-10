@@ -16,7 +16,7 @@ export class UrlInterceptor implements HttpInterceptor {
       return url
     }
     const optionalSlash = url.startsWith('/') ? '' : '/'
-    return "http://localhost:8080/api/v1" + optionalSlash + url
+    return "http://18.191.160.240:8080/api/v1" + optionalSlash + url
   }
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     request = request.clone({

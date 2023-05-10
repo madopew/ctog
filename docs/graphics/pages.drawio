@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2023-05-01T12:10:52.189Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="-78dcAHagUQCxLZUBPrt" version="21.1.2" type="device">
+<mxfile host="Electron" modified="2023-05-10T07:50:08.896Z" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.1.2 Chrome/106.0.5249.199 Electron/21.4.3 Safari/537.36" etag="asKcijaZzV6O2hNRlnhL" version="21.1.2" type="device">
   <diagram name="Page-1" id="pug7JpvvA5jX9YLAj4jf">
     <mxGraphModel dx="567" dy="328" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -150,6 +150,42 @@
         </mxCell>
         <mxCell id="2DIBOKiYu4N6tp_q-Bgl-55" value="3 функции,&lt;br&gt;19 блоков" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" parent="1" vertex="1">
           <mxGeometry x="627" y="700" width="56" height="31" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-4" value="просмотреть" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=8;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="706.75" y="739" width="55.5" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-5" value="16:23 14.04" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="476.5" y="735" width="56" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-6" value="func test() {..}" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="545" y="735" width="64" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-7" value="1 функция,&lt;br&gt;7 блоков" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="628" y="731" width="55" height="31" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-8" value="просмотреть" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=8;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="706.75" y="770" width="55.5" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-9" value="18:19 13.04" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="476.5" y="766" width="56" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-10" value="func main(): int {..}" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="536" y="766" width="82" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-11" value="2 функции,&lt;br&gt;25 блоков" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="627" y="762" width="56" height="31" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-12" value="просмотреть" style="rounded=1;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=8;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="706.75" y="801" width="55.5" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-13" value="03:05 12.04" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="476.5" y="797" width="56" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-14" value="func test(): int {..}" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="538" y="797" width="77" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="f306w9K3d32JlqnVvr-D-15" value="1 функция,&lt;br&gt;5 блоков" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=8;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="628" y="793" width="55" height="31" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
